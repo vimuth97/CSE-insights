@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./LoginPage.css";
+import "./auth.css";
 
 const validateEmail = (email) => {
   if (!email) return "Email is required.";
@@ -63,21 +63,21 @@ export default function LoginPage() {
 
   return (
     // WCAG 2, 1.3.1: <main> landmark lets screen readers jump directly to content
-    <main className="login-page" aria-label="Login page">
-      <div className="login-card">
+    <main className="auth-page" aria-label="Login page">
+      <div className="auth-card">
         {/* WCAG 2, 1.1.1: decorative icon excluded from accessibility tree via aria-hidden */}
-        <div className="login-brand" aria-hidden="true">
+        <div className="auth-brand" aria-hidden="true">
           <span className="brand-icon">📈</span>
         </div>
 
         {/* SEO: descriptive h1 with primary keyword for search indexing */}
-        <h1 className="login-title">CSE Insights</h1>
+        <h1 className="auth-title">CSE Insights</h1>
         {/* SEO: subtitle reinforces page topic for crawlers */}
-        <p className="login-subtitle">Colombo Stock Exchange Analytics</p>
+        <p className="auth-subtitle">Colombo Stock Exchange Analytics</p>
 
         {/* WCAG 2, 4.1.2: aria-label gives the form an accessible name */}
         <form
-          className="login-form"
+          className="auth-form"
           onSubmit={handleSubmit}
           aria-label="Sign in form"
           noValidate
@@ -145,15 +145,21 @@ export default function LoginPage() {
           </div>
 
           {/* WCAG 2, 2.4.6: button label clearly describes the action */}
-          <button type="submit" className="login-btn">
+          <button type="submit" className="auth-btn">
             Sign In
           </button>
         </form>
 
-        <p className="login-footer">
+        <p className="auth-footer">
           {/* WCAG 2, 2.4.4: link text is descriptive and meaningful out of context */}
-          <a href="/forgot-password" className="login-link">
+          <a href="/forgot-password" className="auth-link">
             Forgot your password?
+          </a>
+        </p>
+        <p className="auth-footer">
+          {/* WCAG 2, 2.4.4: link text is descriptive and meaningful out of context */}
+          <a href="/signup" className="auth-link">
+            Create an account
           </a>
         </p>
       </div>
