@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./auth.css";
+import "../styles/auth.css";
 
 const validateFirstName = (name) => {
   if (!name) return "First name is required.";

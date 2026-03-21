@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./auth.css";
+import "../styles/auth.css";
 
 const validateEmail = (email) => {
   if (!email) return "Email is required.";
