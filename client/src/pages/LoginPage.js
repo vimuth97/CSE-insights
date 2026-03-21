@@ -11,7 +11,6 @@ const validateEmail = (email) => {
 const validatePassword = (password) => {
   if (!password) return "Password is required.";
   if (password.length < 8) return "Password must be at least 8 characters.";
-  // single regex tests lowercase, uppercase, number, and special character together
   if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9])/.test(password))
     return "Password must include uppercase, lowercase, number, and a special character.";
   return "";
@@ -32,7 +31,8 @@ export default function LoginPage() {
     if (touched[name] || submitted) {
       setErrors((prev) => ({
         ...prev,
-        [name]: name === "email" ? validateEmail(value) : validatePassword(value),
+        [name]:
+          name === "email" ? validateEmail(value) : validatePassword(value),
       }));
     }
   };
