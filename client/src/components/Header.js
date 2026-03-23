@@ -1,5 +1,7 @@
 import "../styles/header.css";
 
+const path = window.location.pathname;
+
 // WCAG 2, 1.3.1: <header> landmark with nav for screen reader navigation
 export default function Header() {
   return (
@@ -10,14 +12,22 @@ export default function Header() {
           <span className="header-logo" aria-hidden="true">📈</span>
           <div>
             <span className="header-title">CSE Insights</span>
-            <span className="header-subtitle">Colombo Stock Exchange</span>
+            <span className="header-subtitle">Colombo Stock Exchange Analytics</span>
           </div>
         </a>
         {/* WCAG 2, 1.3.1: nav landmark with aria-label */}
+        {/* WCAG 2, 4.1.2: aria-current="page" identifies active link for screen readers */}
         <nav className="header-nav" aria-label="Main navigation">
-          <a href="/home" className="nav-link">Home</a>
-          <a href="/markets" className="nav-link">Markets</a>
-          <a href="/news" className="nav-link">News</a>
+          {[["/home", "Home"], ["/companies", "Companies"], ["/news", "News"]].map(([href, label]) => (
+            <a
+              key={href}
+              href={href}
+              className={`nav-link${path === href ? " nav-link-active" : ""}`}
+              aria-current={path === href ? "page" : undefined}
+            >
+              {label}
+            </a>
+          ))}
         </nav>
       </div>
     </header>

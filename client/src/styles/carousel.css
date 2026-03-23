@@ -7,10 +7,8 @@
 
 .carousel {
   border-radius: 12px;
-  border: 1.5px solid #e0e7f0;
   box-shadow: 0 2px 8px rgba(0, 48, 135, 0.07);
   margin-bottom: 1.5rem;
-  overflow: hidden;
   /* WCAG 2, 2.4.7: outline on focus for keyboard users */
   outline-offset: 2px;
 }

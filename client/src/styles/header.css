@@ -10,12 +10,12 @@
   top: 0;
   z-index: 100;
   box-shadow: 0 2px 8px rgba(0, 48, 135, 0.18);
+  min-height: 70px;
 }
 
 .header-inner {
-  max-width: 800px;
   margin: 0 auto;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -36,13 +36,14 @@
 }
 
 .header-logo {
-  font-size: 1.75rem;
+  font-size: 2.75rem;
   line-height: 1;
+  margin: 0;
 }
 
 .header-title {
   display: block;
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #ffffff;
   line-height: 1.2;
@@ -50,7 +51,7 @@
 
 .header-subtitle {
   display: block;
-  font-size: 0.75rem;
+  font-size: 1rem;
   color: #c9a84c;
   letter-spacing: 0.04em;
 }
@@ -64,7 +65,7 @@
 .nav-link {
   color: #ffffff;
   text-decoration: none;
-  font-size: 0.9375rem;
+  font-size: 1.15rem;
   font-weight: 500;
   padding: 0.25rem 0;
   border-bottom: 2px solid transparent;
@@ -72,7 +73,12 @@
 }
 
 .nav-link:hover {
-  border-bottom-color: #c9a84c;
+  border-bottom-color: grey;
+}
+
+.nav-link-active {
+  font-weight: 700;
+  border-bottom-color: #ffffff ;
 }
 
 /* WCAG 2, 2.4.7: visible focus on nav links */
@@ -85,4 +91,5 @@
 @media (max-width: 480px) {
   .header-nav { gap: 1rem; }
   .nav-link { font-size: 0.875rem; }
+  .header-subtitle { display: none; }
 }
