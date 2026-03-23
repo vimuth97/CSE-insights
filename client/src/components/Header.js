@@ -18,7 +18,7 @@ export default function Header() {
         {/* WCAG 2, 1.3.1: nav landmark with aria-label */}
         {/* WCAG 2, 4.1.2: aria-current="page" identifies active link for screen readers */}
         <nav className="header-nav" aria-label="Main navigation">
-          {[["/home", "Home"], ["/companies", "Companies"], ["/news", "News"]].map(([href, label]) => (
+          {[["/home", "Home"], ["/listings", "Listings"], ["/news", "News"]].map(([href, label]) => (
             <a
               key={href}
               href={href}

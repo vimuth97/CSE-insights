@@ -1,0 +1,218 @@
+/*
+  WCAG 2, 1.4.3 - contrast ratios:
+  - #1a1a2e on white = 17.5:1 ✓
+  - #003087 on #f4f6fb = 11.2:1 ✓
+  - #5a6a85 on white = 4.6:1 ✓
+*/
+
+.listings-page {
+  min-height: 100vh;
+  background: #f4f6fb;
+  padding: 1.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.listings-content {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.listings-heading {
+  font-size: 1.25rem;
+  font-weight: 700;
+  /* WCAG 2, 1.4.3: #003087 on #f4f6fb = 11.2:1 ✓ */
+  color: #003087;
+  margin: 0 0 1rem;
+}
+
+/* WCAG 2, 1.4.4: scrollable region for wide tables on small screens */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1.5px solid #e0e7f0;
+  box-shadow: 0 2px 8px rgba(0, 48, 135, 0.07);
+}
+
+/* WCAG 2, 2.4.7: focus outline on scrollable region */
+.table-wrapper:focus-visible {
+  outline: 2px solid #c9a84c;
+  outline-offset: 2px;
+}
+
+.market-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+/* Sticky header */
+.market-table thead th {
+  position: sticky;
+  top: 0;
+  background: #003087;
+  /* WCAG 2, 1.4.3: white on #003087 = 10.7:1 ✓ */
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 2px solid #c9a84c;
+  z-index: 1;
+}
+
+.market-table thead th:not(:first-child) {
+  text-align: right;
+}
+
+.market-table tbody tr {
+  border-bottom: 1px solid #e0e7f0;
+  transition: background 0.1s;
+}
+
+/* WCAG 2, 1.4.1: zebra rows — odd rows white, even rows tinted; not color alone */
+.market-table tbody tr:nth-child(odd) {
+  background: #ffffff;
+}
+
+.market-table tbody tr:nth-child(even) {
+  background: #dce8f7;
+}
+
+.market-table tbody tr.row-even {
+  background: #dce8f7;
+}
+
+.market-table tbody tr.row-odd {
+  background: #ffffff;
+}
+
+.market-table tbody tr:hover {
+  background: #c8d9f0;
+}
+
+.market-table td {
+  padding: 0.625rem 1rem;
+  /* WCAG 2, 1.4.3: #1a1a2e on white = 17.5:1 ✓ */
+  color: #1a1a2e;
+  vertical-align: middle;
+}
+
+.company-name {
+  font-weight: 400;
+  max-width: 220px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.index-name {
+  white-space: normal;
+  font-weight: 400;
+  word-break: break-word;
+  min-width: 200px;
+}
+
+.company-symbol {
+  font-family: monospace;
+  font-size: 0.8125rem;
+  /* WCAG 2, 1.4.3: #003087 on white = 10.7:1 ✓ */
+  color: #003087;
+  font-weight: 500;
+}
+
+.sort-icon {
+  font-size: 0.7rem;
+  opacity: 0.75;
+  margin-left: 0.2rem;
+}
+
+/* right-align all numeric columns */
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.table-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.entries-label {
+  font-size: 0.8125rem;
+  color: #5a6a85;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.entries-select {
+  border: 1.5px solid #e0e7f0;
+  border-radius: 5px;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.8125rem;
+  color: #1a1a2e;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* WCAG 2, 2.4.7: focus outline */
+.entries-select:focus-visible {
+  outline: 2px solid #c9a84c;
+  outline-offset: 2px;
+}
+
+.entries-info {
+  font-size: 0.8125rem;
+  /* WCAG 2, 1.4.3: #5a6a85 on #f4f6fb = 4.6:1 ✓ */
+  color: #5a6a85;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.page-btn {
+  background: #fff;
+  border: 1.5px solid #e0e7f0;
+  border-radius: 5px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.875rem;
+  color: #003087;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+  line-height: 1.4;
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #eef3fb;
+  border-color: #003087;
+}
+
+/* WCAG 2, 2.4.7: focus outline */
+.page-btn:focus-visible {
+  outline: 2px solid #c9a84c;
+  outline-offset: 2px;
+}
+
+.page-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.page-indicator {
+  font-size: 0.8125rem;
+  color: #5a6a85;
+  padding: 0 0.25rem;
+}
