@@ -168,7 +168,9 @@ export default function ListingsPage() {
                 <tbody>
                   {pageRows.map((c, i) => (
                     <tr key={c.id} className={i % 2 === 0 ? "row-odd" : "row-even"}>
-                      <td className="company-name">{c.name}</td>
+                      <td className="company-name">
+                        <a href={`/company?id=${c.id}`} className="company-link">{c.name}</a>
+                      </td>
                       <td className="company-symbol">{c.symbol}</td>
                       <td className="num">{fmtPrice(c.price)}</td>
                       <td className="num">{fmtMarketCap(c.marketCap)}</td>

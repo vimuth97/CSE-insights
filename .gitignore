@@ -31,3 +31,5 @@ coverage/
 .pnp.js
 
 notes.txt
+client/src/api/gemini.js
+client/src/pages/GeminiPage.js
