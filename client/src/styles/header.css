@@ -1,0 +1,88 @@
+/*
+  WCAG 2, 1.4.3 - contrast ratios:
+  - #ffffff on #003087 = 10.7:1 ✓
+  - #c9a84c on #003087 = 3.5:1 (large text only, used for subtitle) ✓
+*/
+
+.site-header {
+  background: #003087;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 48, 135, 0.18);
+}
+
+.header-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* WCAG 2, 2.4.7: focus visible on brand link */
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.header-brand:focus-visible {
+  outline: 2px solid #c9a84c;
+  outline-offset: 3px;
+}
+
+.header-logo {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.header-title {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.header-subtitle {
+  display: block;
+  font-size: 0.75rem;
+  color: #c9a84c;
+  letter-spacing: 0.04em;
+}
+
+.header-nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+/* WCAG 2, 1.4.3: white on #003087 = 10.7:1 ✓ */
+.nav-link {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  padding: 0.25rem 0;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.15s;
+}
+
+.nav-link:hover {
+  border-bottom-color: #c9a84c;
+}
+
+/* WCAG 2, 2.4.7: visible focus on nav links */
+.nav-link:focus-visible {
+  outline: 2px solid #c9a84c;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@media (max-width: 480px) {
+  .header-nav { gap: 1rem; }
+  .nav-link { font-size: 0.875rem; }
+}

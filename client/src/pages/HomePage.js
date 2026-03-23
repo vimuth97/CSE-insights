@@ -1,6 +1,8 @@
 import "../styles/home.css";
 import IndexChart from "../components/IndexChart";
 import Carousel from "../components/Carousel";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 // Mock data — replace with API calls
 const MARKET_DATA = {
@@ -65,19 +67,9 @@ export default function HomePage() {
 
   return (
     // WCAG 2, 1.3.1: <main> landmark for screen reader navigation
-    <main className="home-page" aria-label="CSE market dashboard">
-      {/* ── Header ── */}
-      <header className="home-header">
-        {/* WCAG 2, 1.1.1: decorative icon hidden from assistive tech */}
-        <span className="home-logo" aria-hidden="true">
-          📈
-        </span>
-        <div>
-          {/* SEO: h1 with primary keyword */}
-          <h1 className="home-title">CSE Insights</h1>
-          <p className="home-subtitle">Colombo Stock Exchange</p>
-        </div>
-      </header>
+    <>
+      <Header />
+      <main className="home-page" aria-label="CSE market dashboard">
       <Carousel />
       {/* ── Carousel: news and announcements ── */}
       <div className="home-content">
@@ -231,6 +223,8 @@ export default function HomePage() {
           </div>
         </section>
       </div>
-    </main>
+      </main>
+      <Footer />
+    </>
   );
 }
