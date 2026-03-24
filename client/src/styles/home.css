@@ -86,6 +86,22 @@
 
 
 /* ── Daily Stats ── */
+.section-heading-row {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 0.875rem;
+}
+
+.section-heading-row .section-heading {
+  margin-bottom: 0;
+}
+
+.summary-date {
+  font-size: 0.8rem;
+  color: #5a6a85;
+  margin-left: 10px;
+}
+
 .stats-section {
   margin-bottom: 2rem;
 }

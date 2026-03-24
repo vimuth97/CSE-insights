@@ -4,7 +4,11 @@ import IndexChart from "../components/IndexChart";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MarketMovers from "../components/MarketMovers";
-import { fetchMarketStatus, fetchMainIndices } from "../api/market";
+import {
+  fetchMarketStatus,
+  fetchMainIndices,
+  fetchMarketSummary,
+} from "../api/market";
 
 const fmt = (n) => n.toLocaleString("en-LK");
 const fmtCurrency = (n) => `LKR ${(n / 1_000_000).toFixed(2)}M`;
@@ -39,6 +43,7 @@ const SL20_HISTORY = [
 export default function HomePage() {
   const [marketData, setMarketData] = useState(null);
   const [indices, setIndices] = useState([]);
+  const [summary, setSummary] = useState(null);
 
   useEffect(() => {
     fetchMarketStatus()
@@ -46,6 +51,9 @@ export default function HomePage() {
       .catch(() => {});
     fetchMainIndices()
       .then((data) => setIndices(data))
+      .catch(() => {});
+    fetchMarketSummary()
+      .then((data) => setSummary(data))
       .catch(() => {});
   }, []);
 
@@ -92,7 +100,18 @@ export default function HomePage() {
             className="stats-section"
             aria-label="Daily market statistics"
           >
-            <h2 className="section-heading">Today's Market</h2>
+            <div className="section-heading-row">
+              <h2 className="section-heading">Daily Market Summary</h2>
+              {summary?.tradeDate && (
+                <p className="summary-date">
+                  {"("}
+                  {new Date(summary.tradeDate).toLocaleDateString("en-LK", {
+                    dateStyle: "long",
+                  })}
+                  {")"}
+                </p>
+              )}
+            </div>
             <div className="stats-grid">
               <article className="stat-card" aria-label="Share volume">
                 <span className="stat-icon" aria-hidden="true">
@@ -100,8 +119,8 @@ export default function HomePage() {
                 </span>
                 <p className="stat-label">Share Volume</p>
                 <strong className="stat-value">
-                  {marketData?.totalVolume != null
-                    ? fmt(marketData.totalVolume)
+                  {summary?.volumeOfTurnOverNumber != null
+                    ? fmt(summary.volumeOfTurnOverNumber)
                     : "—"}
                 </strong>
                 <p className="stat-unit">Shares</p>
@@ -113,8 +132,8 @@ export default function HomePage() {
                 </span>
                 <p className="stat-label">No. of Trades</p>
                 <strong className="stat-value">
-                  {marketData?.totalTrades != null
-                    ? fmt(marketData.totalTrades)
+                  {summary?.marketTrades != null
+                    ? fmt(summary.marketTrades)
                     : "—"}
                 </strong>
                 <p className="stat-unit">Transactions</p>
@@ -126,8 +145,8 @@ export default function HomePage() {
                 </span>
                 <p className="stat-label">Turnover</p>
                 <strong className="stat-value">
-                  {marketData?.totalTurnover != null
-                    ? fmtCurrency(marketData.totalTurnover)
+                  {summary?.marketTurnover != null
+                    ? fmtCurrency(summary.marketTurnover)
                     : "—"}
                 </strong>
                 <p className="stat-unit">For the Day</p>

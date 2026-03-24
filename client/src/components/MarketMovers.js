@@ -1,38 +1,24 @@
 import { useState, useEffect, useCallback } from "react";
 import "../styles/marketmovers.css";
-import companiesData from "../dummy_data/companies.json";
+import {
+  fetchTopGainers,
+  fetchTopLosers,
+  fetchMostActive,
+} from "../api/market";
 
-const ALL = companiesData.reqByMarketcap;
-
-const TOP_GAINERS = [...ALL]
-  .filter((c) => c.percentageChange != null && c.percentageChange > 0)
-  .sort((a, b) => b.percentageChange - a.percentageChange)
-  .slice(0, 5);
-
-const TOP_LOSERS = [...ALL]
-  .filter((c) => c.percentageChange != null && c.percentageChange < 0)
-  .sort((a, b) => a.percentageChange - b.percentageChange)
-  .slice(0, 5);
-
-const MOST_ACTIVE = [...ALL]
-  .filter((c) => c.sharevolume != null)
-  .sort((a, b) => b.sharevolume - a.sharevolume)
-  .slice(0, 5);
-
-const MOVERS_SLIDES = [
+const SLIDE_CONFIG = [
   {
     key: "gainers",
     label: "Top Gainers",
     icon: "▲",
     accent: "#4ade80",
     badgeClass: "movers-badge--gain",
-    items: TOP_GAINERS,
     metricLabel: "Change",
-    metricVal: (c) => Math.abs(c.percentageChange),
-    metricMax: Math.max(
-      ...TOP_GAINERS.map((c) => Math.abs(c.percentageChange)),
-    ),
-    fmt: (c) => `+${c.percentageChange.toFixed(2)}%`,
+    metricVal: (c) => Math.abs(c.changePercentage),
+    fmt: (c) => `+${c.changePercentage.toFixed(2)}%`,
+    finalLabel: "Price (LKR)",
+    finalmt: (c) =>
+      Number(c.price).toLocaleString("en-LK", { minimumFractionDigits: 2 }),
   },
   {
     key: "losers",
@@ -40,11 +26,12 @@ const MOVERS_SLIDES = [
     icon: "▼",
     accent: "#f87171",
     badgeClass: "movers-badge--loss",
-    items: TOP_LOSERS,
     metricLabel: "Change",
-    metricVal: (c) => Math.abs(c.percentageChange),
-    metricMax: Math.max(...TOP_LOSERS.map((c) => Math.abs(c.percentageChange))),
-    fmt: (c) => `${c.percentageChange.toFixed(2)}%`,
+    metricVal: (c) => Math.abs(c.changePercentage),
+    fmt: (c) => `${c.changePercentage.toFixed(2)}%`,
+    finalLabel: "Price (LKR)",
+    finalmt: (c) =>
+      Number(c.price).toLocaleString("en-LK", { minimumFractionDigits: 2 }),
   },
   {
     key: "active",
@@ -52,20 +39,33 @@ const MOVERS_SLIDES = [
     icon: "⚡",
     accent: "#c9a84c",
     badgeClass: "movers-badge--active",
-    items: MOST_ACTIVE,
-    metricLabel: "Share Volume",
-    metricVal: (c) => c.sharevolume,
-    metricMax: Math.max(...MOST_ACTIVE.map((c) => c.sharevolume)),
-    fmt: (c) => `${Number(c.sharevolume).toLocaleString("en-LK")}`,
+    metricLabel: "Trade Volume",
+    metricVal: (c) => c.tradeVolume,
+    fmt: (c) => Number(c.tradeVolume).toLocaleString("en-LK"),
+    finalLabel: "Share Volume",
+    finalmt: (c) => Number(c.shareVolume),
   },
 ];
 
 export default function MarketMovers() {
   const [slide, setSlide] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [data, setData] = useState({ gainers: [], losers: [], active: [] });
+
+  useEffect(() => {
+    fetchTopGainers()
+      .then((d) => setData((prev) => ({ ...prev, gainers: d })))
+      .catch(() => {});
+    fetchTopLosers()
+      .then((d) => setData((prev) => ({ ...prev, losers: d })))
+      .catch(() => {});
+    fetchMostActive()
+      .then((d) => setData((prev) => ({ ...prev, active: d })))
+      .catch(() => {});
+  }, []);
 
   const next = useCallback(
-    () => setSlide((s) => (s + 1) % MOVERS_SLIDES.length),
+    () => setSlide((s) => (s + 1) % SLIDE_CONFIG.length),
     [],
   );
 
@@ -75,7 +75,9 @@ export default function MarketMovers() {
     return () => clearInterval(t);
   }, [paused, next]);
 
-  const active = MOVERS_SLIDES[slide];
+  const config = SLIDE_CONFIG[slide];
+  const items = data[config.key].slice(0, 5);
+  const metricMax = items.length ? Math.max(...items.map(config.metricVal)) : 1;
 
   return (
     <section
@@ -85,13 +87,12 @@ export default function MarketMovers() {
       onMouseLeave={() => setPaused(false)}
     >
       <div className="movers-hero-inner">
-        {/* Tab strip */}
         <div
           className="movers-tabs"
           role="tablist"
           aria-label="Market mover categories"
         >
-          {MOVERS_SLIDES.map((s, i) => (
+          {SLIDE_CONFIG.map((s, i) => (
             <button
               key={s.key}
               role="tab"
@@ -106,28 +107,26 @@ export default function MarketMovers() {
               <span aria-hidden="true">{s.icon}</span> {s.label}
             </button>
           ))}
-          {/* Progress bar */}
           <div className="movers-progress" aria-hidden="true">
             <div
               className={`movers-progress-bar ${paused ? "movers-progress-bar--paused" : ""}`}
-              style={{ "--accent": active.accent }}
+              style={{ "--accent": config.accent }}
               key={slide}
             />
           </div>
         </div>
 
-        {/* Slide content */}
-        <div className="movers-slide" role="tabpanel" aria-label={active.label}>
+        <div className="movers-slide" role="tabpanel" aria-label={config.label}>
           <div className="movers-slide-header">
             <span
               className="movers-slide-icon"
-              style={{ color: active.accent }}
+              style={{ color: config.accent }}
               aria-hidden="true"
             >
-              {active.icon}
+              {config.icon}
             </span>
-            <h2 className="movers-slide-title" style={{ color: active.accent }}>
-              {active.label}
+            <h2 className="movers-slide-title" style={{ color: config.accent }}>
+              {config.label}
             </h2>
           </div>
           <ul className="movers-slide-list">
@@ -138,45 +137,40 @@ export default function MarketMovers() {
               <span className="msr-rank">#</span>
               <span className="msr-name">Company</span>
               <span className="msr-symbol">Symbol</span>
-              <span className="msr-metric">{active.metricLabel}</span>
-              <span className="msr-price">Price (LKR)</span>
+              <span className="msr-metric">{config.metricLabel}</span>
+              <span className="msr-price">{config.finalLabel}</span>
             </li>
-            {active.items.map((c, i) => {
-              const pct = (active.metricVal(c) / active.metricMax) * 100;
+            {items.map((c, i) => {
+              const pct = (config.metricVal(c) / metricMax) * 100;
               return (
                 <li key={c.id} className="movers-slide-row">
-                  <span className="msr-rank" style={{ color: active.accent }}>
+                  <span className="msr-rank" style={{ color: config.accent }}>
                     {i + 1}
                   </span>
-                  <a href={`/company?id=${c.id}`} className="msr-name">
-                    {c.name}
+                  <a href={`/company?id=${c.securityId}`} className="msr-name">
+                    {c.symbol}
                   </a>
                   <span className="msr-symbol">{c.symbol}</span>
                   <span className="msr-metric">
-                    <span className={`movers-badge ${active.badgeClass}`}>
-                      {active.fmt(c)}
+                    <span className={`movers-badge ${config.badgeClass}`}>
+                      {config.fmt(c)}
                     </span>
                     <span className="msr-bar-track" aria-hidden="true">
                       <span
                         className="msr-bar-fill"
-                        style={{ width: `${pct}%`, background: active.accent }}
+                        style={{ width: `${pct}%`, background: config.accent }}
                       />
                     </span>
                   </span>
-                  <span className="msr-price">
-                    {Number(c.price).toLocaleString("en-LK", {
-                      minimumFractionDigits: 2,
-                    })}
-                  </span>
+                  <span className="msr-price">{config.finalmt(c)}</span>
                 </li>
               );
             })}
           </ul>
         </div>
 
-        {/* Dot indicators */}
         <div className="movers-dots" role="presentation">
-          {MOVERS_SLIDES.map((s, i) => (
+          {SLIDE_CONFIG.map((s, i) => (
             <button
               key={s.key}
               className={`movers-dot ${i === slide ? "movers-dot--active" : ""}`}
