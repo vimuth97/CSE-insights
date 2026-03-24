@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../styles/auth.css";
+import { loginUser } from "../api/auth";
 
 const validateEmail = (email) => {
   if (!email) return "Email is required.";
@@ -22,6 +23,8 @@ export default function LoginPage() {
   // WCAG 2, 3.3.1: track visited fields so errors only show after user has left the field
   const [touched, setTouched] = useState({ email: false, password: false });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,7 +50,7 @@ export default function LoginPage() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitted(true);
     const validationErrors = {
@@ -56,8 +59,16 @@ export default function LoginPage() {
     };
     setErrors(validationErrors);
     if (!validationErrors.email && !validationErrors.password) {
-      // TODO: connect to auth API
-      console.log("Login submitted", form);
+      setLoading(true);
+      setApiError("");
+      try {
+        await loginUser(form);
+        window.location.href = "/home";
+      } catch (err) {
+        setApiError(err.message);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -144,9 +155,13 @@ export default function LoginPage() {
             )}
           </div>
 
+          {apiError && (
+            <span className="error-msg" role="alert">{apiError}</span>
+          )}
+
           {/* WCAG 2, 2.4.6: button label clearly describes the action */}
-          <button type="submit" className="auth-btn">
-            Sign In
+          <button type="submit" className="auth-btn" disabled={loading}>
+            {loading ? "Signing In…" : "Sign In"}
           </button>
         </form>
 

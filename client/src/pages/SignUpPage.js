@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "../styles/auth.css";
+import { registerUser } from "../api/auth";
 
 const validateFirstName = (name) => {
   if (!name) return "First name is required.";
@@ -61,6 +62,8 @@ export default function SignUpPage() {
     confirmPassword: false,
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
 
   const getFieldError = (name, value, currentForm) => {
     if (name === "firstName") return validateFirstName(value);
@@ -95,7 +98,7 @@ export default function SignUpPage() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitted(true);
     const validationErrors = FIELDS.reduce((acc, name) => {
@@ -104,8 +107,16 @@ export default function SignUpPage() {
     }, {});
     setErrors(validationErrors);
     if (FIELDS.every((name) => !validationErrors[name])) {
-      // TODO: connect to auth API
-      console.log("Sign up submitted", form);
+      setLoading(true);
+      setApiError("");
+      try {
+        await registerUser(form);
+        window.location.href = "/";
+      } catch (err) {
+        setApiError(err.message);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -298,9 +309,14 @@ export default function SignUpPage() {
             )}
           </div>
 
+          {/* WCAG 2, 3.3.1: server-side error displayed as alert */}
+          {apiError && (
+            <span className="error-msg" role="alert">{apiError}</span>
+          )}
+
           {/* WCAG 2, 2.4.6: button label clearly describes the action */}
-          <button type="submit" className="auth-btn">
-            Create Account
+          <button type="submit" className="auth-btn" disabled={loading}>
+            {loading ? "Creating Account…" : "Create Account"}
           </button>
         </form>
 
