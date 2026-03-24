@@ -29,8 +29,8 @@
 }
 
 .company-logo {
-  width: 40%;
-  /* height: 120px; */
+  max-width: 250px;
+  max-height: 150px;
   object-fit: contain;
   border-radius: 10px;
   border: 1px solid #e0e7f0;

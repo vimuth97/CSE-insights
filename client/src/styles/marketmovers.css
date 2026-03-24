@@ -1,0 +1,244 @@
+/* ── Market Movers Carousel ── */
+.movers-hero {
+  background: #0f172a;
+  padding: 0;
+  user-select: none;
+}
+
+.movers-hero-inner {
+  max-width: 100%;
+  padding: 0;
+}
+
+/* Tab strip */
+.movers-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #0a1020;
+  padding: 0 2rem;
+  position: relative;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.movers-tab {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.movers-tab:hover {
+  color: rgba(255,255,255,0.8);
+}
+
+.movers-tab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Progress bar */
+.movers-progress {
+  flex: 1;
+  height: 2px;
+  background: rgba(255,255,255,0.06);
+  margin-left: auto;
+  border-radius: 2px;
+  overflow: hidden;
+  align-self: flex-end;
+  margin-bottom: 0;
+}
+
+.movers-progress-bar {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  animation: movers-fill 4s linear forwards;
+  border-radius: 2px;
+}
+
+.movers-progress-bar--paused {
+  animation-play-state: paused;
+}
+
+@keyframes movers-fill {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+/* Slide */
+.movers-slide {
+  padding: 1.5rem 2rem 1rem;
+}
+
+.movers-slide-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.movers-slide-icon {
+  font-size: 1rem;
+}
+
+.movers-slide-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* Full-width table list */
+.movers-slide-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.movers-slide-row {
+  display: grid;
+  grid-template-columns: 2rem 1fr 100px 0.5fr 120px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.movers-slide-row:last-child {
+  border-bottom: none;
+}
+
+.movers-slide-row--head {
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.movers-slide-row--head span {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+}
+
+.msr-rank {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.msr-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.msr-name:hover {
+  color: #c9a84c;
+  text-decoration: underline;
+}
+
+.msr-symbol {
+  font-size: 0.75rem;
+  font-family: monospace;
+  color: rgba(255,255,255,0.35);
+}
+
+.msr-price {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.8);
+  text-align: right;
+}
+
+.msr-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.msr-bar-track {
+  display: block;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.msr-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.msr-badge {
+  text-align: right;
+}
+
+/* Badges */
+.movers-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+.movers-badge--gain   { background: rgba(74,222,128,0.12); color: #4ade80; }
+.movers-badge--loss   { background: rgba(248,113,113,0.12); color: #f87171; }
+.movers-badge--active { background: rgba(201,168,76,0.12);  color: #c9a84c; }
+
+/* Dot indicators */
+.movers-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0 1rem;
+}
+
+.movers-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.2);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  padding: 0;
+}
+
+.movers-dot--active {
+  background: var(--accent);
+  transform: scale(1.3);
+}
+
+@media (max-width: 700px) {
+  .movers-slide-row {
+    grid-template-columns: 1.5rem 1fr 1fr 90px;
+  }
+  .msr-symbol { display: none; }
+  .movers-tabs { padding: 0 0.75rem; }
+  .movers-slide { padding: 1rem 0.75rem 0.5rem; }
+}
