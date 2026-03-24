@@ -83,7 +83,16 @@ export default function CompanyPage() {
 
           {/* ── Financial Summary ── */}
           <section className="page-section" aria-label="Financial Summary">
-            <h2 className="page-section-heading">Financial Summary</h2>
+            <h2 className="page-section-heading">
+              Financial Summary
+              <a
+                href={`/analytics?id=${company.id}`}
+                className="analytics-btn"
+                aria-label={`View analytics for ${company.name}`}
+              >
+                View Analytics →
+              </a>
+            </h2>
 
             {/* Key stats grid */}
             <div className="company-grid">
@@ -326,13 +335,15 @@ export default function CompanyPage() {
             </div>
           </section>
 
-          <button
-            className="back-btn"
-            onClick={() => window.history.back()}
-            aria-label="Back to Listings"
-          >
-            ← Back to Listings
-          </button>
+          <div className="company-actions">
+            <button
+              className="back-btn"
+              onClick={() => window.history.back()}
+              aria-label="Back to Listings"
+            >
+              ← Back to Listings
+            </button>
+          </div>
         </div>
       </main>
       <Footer />

@@ -111,7 +111,7 @@
 
 .movers-slide-row {
   display: grid;
-  grid-template-columns: 2rem 1fr 100px 0.5fr 120px;
+  grid-template-columns: 2rem 1fr 150px 0.4fr 120px;
   align-items: center;
   gap: 0.5rem;
   padding: 0.55rem 0;
