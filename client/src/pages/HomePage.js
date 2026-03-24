@@ -1,35 +1,10 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/home.css";
 import IndexChart from "../components/IndexChart";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import MarketMovers from "../components/MarketMovers";
-const MARKET_DATA = {
-  status: "Open",
-  date: "2025-07-14",
-  shareVolume: 42_318_500,
-  trades: 8_742,
-  turnover: 1_284_650_000,
-};
-
-const INDICES = [
-  {
-    id: "aspi",
-    name: "ASPI",
-    fullName: "All Share Price Index",
-    value: 13_842.56,
-    change: 124.32,
-    changePercent: 0.91,
-  },
-  {
-    id: "sl20",
-    name: "S&P SL20",
-    fullName: "S&P Sri Lanka 20 Index",
-    value: 4_218.74,
-    change: -38.15,
-    changePercent: -0.9,
-  },
-];
+import { fetchMarketStatus, fetchMainIndices } from "../api/market";
 
 const fmt = (n) => n.toLocaleString("en-LK");
 const fmtCurrency = (n) => `LKR ${(n / 1_000_000).toFixed(2)}M`;
@@ -62,7 +37,21 @@ const SL20_HISTORY = [
 ];
 
 export default function HomePage() {
-  const isOpen = MARKET_DATA.status === "Open";
+  const [marketData, setMarketData] = useState(null);
+  const [indices, setIndices] = useState([]);
+
+  useEffect(() => {
+    fetchMarketStatus()
+      .then((data) => setMarketData(data))
+      .catch(() => {});
+    fetchMainIndices()
+      .then((data) => setIndices(data))
+      .catch(() => {});
+  }, []);
+
+  const timestamp = new Date();
+  const isOpen = marketData?.marketStatus === "Market Opened";
+  const statusLabel = isOpen ? "Open" : "Closed";
 
   return (
     // WCAG 2, 1.3.1: <main> landmark for screen reader navigation
@@ -75,23 +64,23 @@ export default function HomePage() {
           {/* WCAG 2, 1.3.1: section with descriptive aria-label as region landmark */}
           <section className="status-section" aria-label="Market status">
             <h2 className="section-heading">Market Status</h2>
-            {/* WCAG 2, 1.3.1: aria-label conveys market status beyond color */}
             <div className="status-card">
               <span
                 className={`market-badge ${isOpen ? "badge-open" : "badge-closed"}`}
-                aria-label={`Market is currently ${MARKET_DATA.status}`}
+                aria-label={`Market is currently ${statusLabel}`}
               >
-                {/* WCAG 2, 1.4.1: status uses text + color, not color alone */}
                 <span className="badge-dot" aria-hidden="true" />
-                Market {MARKET_DATA.status}
+                Market {statusLabel}
               </span>
-              {/* SEO: date context for crawlers */}
               <p
                 className="home-date"
-                aria-label={`Market data for ${MARKET_DATA.date}`}
+                aria-label={`Market data for ${timestamp.toLocaleDateString("en-LK", { dateStyle: "long" })}`}
               >
-                {new Date(MARKET_DATA.date).toLocaleDateString("en-LK", {
-                  dateStyle: "long",
+                {timestamp.toLocaleDateString("en-LK", { dateStyle: "long" })}{" "}
+                {timestamp.toLocaleTimeString("en-LK", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
                 })}
               </p>
             </div>
@@ -106,14 +95,14 @@ export default function HomePage() {
             <h2 className="section-heading">Today's Market</h2>
             <div className="stats-grid">
               <article className="stat-card" aria-label="Share volume">
-                {/* WCAG 2, 1.1.1: decorative icons hidden */}
                 <span className="stat-icon" aria-hidden="true">
                   📊
                 </span>
                 <p className="stat-label">Share Volume</p>
-                {/* WCAG 2, 1.3.1: <strong> conveys importance semantically */}
                 <strong className="stat-value">
-                  {fmt(MARKET_DATA.shareVolume)}
+                  {marketData?.totalVolume != null
+                    ? fmt(marketData.totalVolume)
+                    : "—"}
                 </strong>
                 <p className="stat-unit">Shares</p>
               </article>
@@ -124,7 +113,9 @@ export default function HomePage() {
                 </span>
                 <p className="stat-label">No. of Trades</p>
                 <strong className="stat-value">
-                  {fmt(MARKET_DATA.trades)}
+                  {marketData?.totalTrades != null
+                    ? fmt(marketData.totalTrades)
+                    : "—"}
                 </strong>
                 <p className="stat-unit">Transactions</p>
               </article>
@@ -135,7 +126,9 @@ export default function HomePage() {
                 </span>
                 <p className="stat-label">Turnover</p>
                 <strong className="stat-value">
-                  {fmtCurrency(MARKET_DATA.turnover)}
+                  {marketData?.totalTurnover != null
+                    ? fmtCurrency(marketData.totalTurnover)
+                    : "—"}
                 </strong>
                 <p className="stat-unit">For the Day</p>
               </article>
@@ -147,31 +140,30 @@ export default function HomePage() {
           <section className="indices-section" aria-label="Market indices">
             <h2 className="section-heading">Market Indices</h2>
             <div className="indices-grid">
-              {INDICES.map((index) => {
+              {indices.map((index) => {
                 const isPositive = index.change >= 0;
                 return (
                   <article
                     key={index.id}
                     className="index-card"
-                    // WCAG 2, 1.3.1: full context for screen readers including direction
-                    aria-label={`${index.fullName}: ${index.value}, ${isPositive ? "up" : "down"} ${Math.abs(index.changePercent)}%`}
+                    aria-label={`${index.indexName}: ${index.indexValue}, ${isPositive ? "up" : "down"} ${Math.abs(index.percentage).toFixed(2)}%`}
                   >
                     <div className="index-header">
                       <div>
-                        <p className="index-name">{index.name}</p>
-                        <p className="index-full-name">{index.fullName}</p>
+                        <p className="index-name">{index.symbol}</p>
+                        <p className="index-full-name">{index.indexName}</p>
                       </div>
                       {/* WCAG 2, 1.4.1: change uses arrow symbol + color, not color alone */}
                       <span
                         className={`index-change ${isPositive ? "change-up" : "change-down"}`}
                         aria-hidden="true"
                       >
-                        {isPositive ? "▲" : "▼"} {Math.abs(index.changePercent)}
-                        %
+                        {isPositive ? "▲" : "▼"}{" "}
+                        {Math.abs(index.percentage).toFixed(2)}%
                       </span>
                     </div>
                     <p className="index-value">
-                      {index.value.toLocaleString("en-LK", {
+                      {Number(index.indexValue).toLocaleString("en-LK", {
                         minimumFractionDigits: 2,
                       })}
                     </p>
@@ -179,7 +171,7 @@ export default function HomePage() {
                       className={`index-points ${isPositive ? "change-up" : "change-down"}`}
                     >
                       {isPositive ? "+" : ""}
-                      {index.change.toFixed(2)} pts
+                      {Number(index.change).toFixed(2)} pts
                     </p>
                   </article>
                 );

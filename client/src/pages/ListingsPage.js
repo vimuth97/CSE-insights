@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import companiesData from "../dummy_data/companies.json";
-import indicesData from "../dummy_data/indices.json";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "../styles/listings.css";
+import { fetchIndices } from "../api/market";
 
 const fmtPrice = (n) =>
   n != null
@@ -16,17 +16,18 @@ const fmtMarketCap = (n) =>
   n != null ? `LKR ${(n / 1_000_000_000).toFixed(2)}B` : "—";
 const fmtPct = (n) => (n != null ? `${Number(n).toFixed(4)}%` : "—");
 const fmtQty = (n) => (n != null ? Number(n).toLocaleString("en-LK") : "—");
-const fmtValue = (n) => (n != null ? `LKR ${(n / 1_000_000).toFixed(2)}M` : "—");
+const fmtValue = (n) =>
+  n != null ? `LKR ${(n / 1_000_000).toFixed(2)}M` : "—";
 const fmtPctChange = (n) =>
   n != null ? `${n >= 0 ? "+" : ""}${Number(n).toFixed(4)}%` : "—";
 
 const COMPANIES = companiesData.reqByMarketcap;
-const INDICES = indicesData[0];
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 // null-safe comparator: nulls always sort last regardless of direction
 function cmp(a, b, key, dir) {
-  const av = a[key], bv = b[key];
+  const av = a[key],
+    bv = b[key];
   if (av == null && bv == null) return 0;
   if (av == null) return 1;
   if (bv == null) return -1;
@@ -44,6 +45,16 @@ export default function ListingsPage() {
   const [idxPage, setIdxPage] = useState(1);
   const [idxSortKey, setIdxSortKey] = useState(null);
   const [idxSortDir, setIdxSortDir] = useState("asc");
+  const [indices, setIndices] = useState([]);
+  const [indicesLoading, setIndicesLoading] = useState(true);
+  const [indicesError, setIndicesError] = useState("");
+
+  useEffect(() => {
+    fetchIndices()
+      .then((data) => setIndices(data))
+      .catch((err) => setIndicesError(err.message))
+      .finally(() => setIndicesLoading(false));
+  }, []);
 
   function handleIdxSort(key) {
     if (idxSortKey === key) {
@@ -80,8 +91,8 @@ export default function ListingsPage() {
   }
 
   const idxSorted = idxSortKey
-    ? [...INDICES].sort((a, b) => cmp(a, b, idxSortKey, idxSortDir))
-    : INDICES;
+    ? [...indices].sort((a, b) => cmp(a, b, idxSortKey, idxSortDir))
+    : indices;
   const idxTotal = idxSorted.length;
   const idxTotalPages = Math.ceil(idxTotal / idxPageSize);
   const idxStart = (idxPage - 1) * idxPageSize;
@@ -100,10 +111,15 @@ export default function ListingsPage() {
       <th
         scope="col"
         onClick={() => handleSort(field)}
-        aria-sort={active ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
+        aria-sort={
+          active ? (sortDir === "asc" ? "ascending" : "descending") : "none"
+        }
         style={{ cursor: "pointer", userSelect: "none" }}
       >
-        {label}<span className="sort-icon" aria-hidden="true">{icon}</span>
+        {label}
+        <span className="sort-icon" aria-hidden="true">
+          {icon}
+        </span>
       </th>
     );
   }
@@ -115,10 +131,15 @@ export default function ListingsPage() {
       <th
         scope="col"
         onClick={() => handleIdxSort(field)}
-        aria-sort={active ? (idxSortDir === "asc" ? "ascending" : "descending") : "none"}
+        aria-sort={
+          active ? (idxSortDir === "asc" ? "ascending" : "descending") : "none"
+        }
         style={{ cursor: "pointer", userSelect: "none" }}
       >
-        {label}<span className="sort-icon" aria-hidden="true">{icon}</span>
+        {label}
+        <span className="sort-icon" aria-hidden="true">
+          {icon}
+        </span>
       </th>
     );
   }
@@ -135,15 +156,24 @@ export default function ListingsPage() {
               {/* WCAG 2, 1.3.1: label associated with select */}
               <label className="entries-label" htmlFor="page-size">
                 Show
-                <select id="page-size" className="entries-select" value={pageSize} onChange={handlePageSize}>
+                <select
+                  id="page-size"
+                  className="entries-select"
+                  value={pageSize}
+                  onChange={handlePageSize}
+                >
                   {PAGE_SIZE_OPTIONS.map((n) => (
-                    <option key={n} value={n}>{n}</option>
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
                   ))}
                 </select>
                 entries
               </label>
               <span className="entries-info" aria-live="polite">
-                Showing {totalEntries === 0 ? 0 : start + 1}–{Math.min(start + pageSize, totalEntries)} of {totalEntries} entries
+                Showing {totalEntries === 0 ? 0 : start + 1}–
+                {Math.min(start + pageSize, totalEntries)} of {totalEntries}{" "}
+                entries
               </span>
             </div>
             {/* WCAG 2, 1.3.1: scrollable region with label for screen readers */}
@@ -167,9 +197,17 @@ export default function ListingsPage() {
                 </thead>
                 <tbody>
                   {pageRows.map((c, i) => (
-                    <tr key={c.id} className={i % 2 === 0 ? "row-odd" : "row-even"}>
+                    <tr
+                      key={c.id}
+                      className={i % 2 === 0 ? "row-odd" : "row-even"}
+                    >
                       <td className="company-name">
-                        <a href={`/company?id=${c.id}`} className="company-link">{c.name}</a>
+                        <a
+                          href={`/company?id=${c.id}`}
+                          className="company-link"
+                        >
+                          {c.name}
+                        </a>
                       </td>
                       <td className="company-symbol">{c.symbol}</td>
                       <td className="num">{fmtPrice(c.price)}</td>
@@ -182,19 +220,26 @@ export default function ListingsPage() {
               </table>
             </div>
             {/* WCAG 2, 4.1.2: pagination nav with aria-label */}
-            <nav className="pagination" aria-label="Company Directory pagination">
+            <nav
+              className="pagination"
+              aria-label="Company Directory pagination"
+            >
               <button
                 className="page-btn"
                 onClick={() => setPage(1)}
                 disabled={page === 1}
                 aria-label="First page"
-              >«</button>
+              >
+                «
+              </button>
               <button
                 className="page-btn"
                 onClick={() => setPage((p) => p - 1)}
                 disabled={page === 1}
                 aria-label="Previous page"
-              >‹</button>
+              >
+                ‹
+              </button>
               <span className="page-indicator" aria-current="true">
                 Page {page} of {totalPages}
               </span>
@@ -203,85 +248,152 @@ export default function ListingsPage() {
                 onClick={() => setPage((p) => p + 1)}
                 disabled={page === totalPages}
                 aria-label="Next page"
-              >›</button>
+              >
+                ›
+              </button>
               <button
                 className="page-btn"
                 onClick={() => setPage(totalPages)}
                 disabled={page === totalPages}
                 aria-label="Last page"
-              >»</button>
+              >
+                »
+              </button>
             </nav>
           </section>
-          <section aria-label="GICS Industry Group Indices" style={{ marginTop: "2rem" }}>
+          <section
+            aria-label="GICS Industry Group Indices"
+            style={{ marginTop: "2rem" }}
+          >
             <h1 className="listings-heading">GICS Industry Group Indices</h1>
             <div className="table-controls">
               {/* WCAG 2, 1.3.1: label associated with select */}
               <label className="entries-label" htmlFor="idx-page-size">
                 Show
-                <select id="idx-page-size" className="entries-select" value={idxPageSize} onChange={handleIdxPageSize}>
+                <select
+                  id="idx-page-size"
+                  className="entries-select"
+                  value={idxPageSize}
+                  onChange={handleIdxPageSize}
+                >
                   {PAGE_SIZE_OPTIONS.map((n) => (
-                    <option key={n} value={n}>{n}</option>
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
                   ))}
                 </select>
                 entries
               </label>
               <span className="entries-info" aria-live="polite">
-                Showing {idxTotal === 0 ? 0 : idxStart + 1}–{Math.min(idxStart + idxPageSize, idxTotal)} of {idxTotal} entries
+                Showing {idxTotal === 0 ? 0 : idxStart + 1}–
+                {Math.min(idxStart + idxPageSize, idxTotal)} of {idxTotal}{" "}
+                entries
               </span>
             </div>
+            {indicesLoading && (
+              <p style={{ padding: "1rem" }}>Loading indices…</p>
+            )}
+            {indicesError && (
+              <p style={{ padding: "1rem", color: "#b91c1c" }}>
+                {indicesError}
+              </p>
+            )}
             {/* WCAG 2, 1.3.1: scrollable region with label for screen readers */}
-            <div
-              className="table-wrapper"
-              role="region"
-              aria-label="GICS Industry Group Indices table"
-              tabIndex="0"
-            >
-              <table className="market-table">
-                <thead>
-                  <tr>
-                    <th scope="col">Index Name</th>
-                    <th scope="col">Index Code</th>
-                    <th scope="col">GICS Code</th>
-                    <th scope="col">Current Value</th>
-                    <IdxSortTh label="Change %" field="percentage" />
-                    <IdxSortTh label="Total Volume" field="sectorVolumeToday" />
-                    <IdxSortTh label="Total Value" field="sectorTurnoverToday" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {idxRows.map((idx, i) => (
-                    <tr key={idx.id} className={i % 2 === 0 ? "row-odd" : "row-even"}>
-                      <td className="index-name">{idx.indexName}</td>
-                      <td className="company-symbol">{idx.indexCodeSp}</td>
-                      <td className="num">{idx.indexCode ?? "—"}</td>
-                      <td className="num">{fmtPrice(idx.indexValue)}</td>
-                      <td
-                        className="num"
-                        style={{
-                          color:
-                            idx.percentage > 0
-                              ? "#1a7a3c"
-                              : idx.percentage < 0
-                              ? "#b91c1c"
-                              : "inherit",
-                        }}
-                      >
-                        {fmtPctChange(idx.percentage)}
-                      </td>
-                      <td className="num">{fmtQty(idx.sectorVolumeToday)}</td>
-                      <td className="num">{fmtValue(idx.sectorTurnoverToday)}</td>
+            {!indicesLoading && !indicesError && (
+              <div
+                className="table-wrapper"
+                role="region"
+                aria-label="GICS Industry Group Indices table"
+                tabIndex="0"
+              >
+                <table className="market-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Index Name</th>
+                      <th scope="col">Index Code</th>
+                      <th scope="col">GICS Code</th>
+                      <th scope="col">Current Value</th>
+                      <IdxSortTh label="Change %" field="percentage" />
+                      <IdxSortTh
+                        label="Total Volume"
+                        field="sectorVolumeToday"
+                      />
+                      <IdxSortTh
+                        label="Total Value"
+                        field="sectorTurnoverToday"
+                      />
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {idxRows.map((idx, i) => (
+                      <tr
+                        key={idx.id}
+                        className={i % 2 === 0 ? "row-odd" : "row-even"}
+                      >
+                        <td className="index-name">{idx.indexName}</td>
+                        <td className="company-symbol">{idx.indexCodeSp}</td>
+                        <td className="num">{idx.indexCode ?? "—"}</td>
+                        <td className="num">{fmtPrice(idx.indexValue)}</td>
+                        <td
+                          className="num"
+                          style={{
+                            color:
+                              idx.percentage > 0
+                                ? "#1a7a3c"
+                                : idx.percentage < 0
+                                  ? "#b91c1c"
+                                  : "inherit",
+                          }}
+                        >
+                          {fmtPctChange(idx.percentage)}
+                        </td>
+                        <td className="num">{fmtQty(idx.sectorVolumeToday)}</td>
+                        <td className="num">
+                          {fmtValue(idx.sectorTurnoverToday)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
             {/* WCAG 2, 4.1.2: pagination nav with aria-label */}
             <nav className="pagination" aria-label="GICS Indices pagination">
-              <button className="page-btn" onClick={() => setIdxPage(1)} disabled={idxPage === 1} aria-label="First page">«</button>
-              <button className="page-btn" onClick={() => setIdxPage((p) => p - 1)} disabled={idxPage === 1} aria-label="Previous page">‹</button>
-              <span className="page-indicator" aria-current="true">Page {idxPage} of {idxTotalPages}</span>
-              <button className="page-btn" onClick={() => setIdxPage((p) => p + 1)} disabled={idxPage === idxTotalPages} aria-label="Next page">›</button>
-              <button className="page-btn" onClick={() => setIdxPage(idxTotalPages)} disabled={idxPage === idxTotalPages} aria-label="Last page">»</button>
+              <button
+                className="page-btn"
+                onClick={() => setIdxPage(1)}
+                disabled={idxPage === 1}
+                aria-label="First page"
+              >
+                «
+              </button>
+              <button
+                className="page-btn"
+                onClick={() => setIdxPage((p) => p - 1)}
+                disabled={idxPage === 1}
+                aria-label="Previous page"
+              >
+                ‹
+              </button>
+              <span className="page-indicator" aria-current="true">
+                Page {idxPage} of {idxTotalPages}
+              </span>
+              <button
+                className="page-btn"
+                onClick={() => setIdxPage((p) => p + 1)}
+                disabled={idxPage === idxTotalPages}
+                aria-label="Next page"
+              >
+                ›
+              </button>
+              <button
+                className="page-btn"
+                onClick={() => setIdxPage(idxTotalPages)}
+                disabled={idxPage === idxTotalPages}
+                aria-label="Last page"
+              >
+                »
+              </button>
             </nav>
           </section>
         </div>
