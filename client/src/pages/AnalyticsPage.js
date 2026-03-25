@@ -3,7 +3,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "../styles/analytics.css";
 import "../styles/company.css";
-import { fetchCompany, fetchFinancials } from "../api/market";
+import { fetchCompany, fetchFinancials, fetchSummarise } from "../api/market";
 
 const LOGO_BASE = "https://cdn.cse.lk/cmt/";
 const CDN_BASE = "https://cdn.cse.lk/";
@@ -12,6 +12,65 @@ const byUploadedDesc = (a, b) => b.manualDate - a.manualDate;
 
 const fmtDate = (ts) =>
   new Date(ts).toLocaleDateString("en-LK", { dateStyle: "medium" });
+
+function formatSummary(text) {
+  return text.split("\n").map((line, i) => {
+    const parts = line.split(/\*\*(.*?)\*\*/g);
+    return (
+      <span key={i}>
+        {parts.map((part, j) =>
+          j % 2 === 1 ? <strong key={j}>{part}</strong> : part
+        )}
+        <br />
+      </span>
+    );
+  });
+}
+
+function ReportItem({ r }) {
+  const [summary, setSummary] = useState("");
+  const [summarising, setSummarising] = useState(false);
+  const [sumError, setSumError] = useState("");
+
+  async function handleSummarise() {
+    setSummarising(true);
+    setSumError("");
+    setSummary("");
+    try {
+      const text = await fetchSummarise(`${CDN_BASE}${r.path}`);
+      setSummary(text);
+    } catch (err) {
+      setSumError(err.message);
+    } finally {
+      setSummarising(false);
+    }
+  }
+
+  return (
+    <li key={r.id} className="report-item">
+      <div className="report-item-row">
+        <a href={`${CDN_BASE}${r.path}`} target="_blank" rel="noreferrer" className="report-link">
+          <span className="report-icon" aria-hidden="true">📄</span>
+          <span className="report-text">{r.fileText}</span>
+        </a>
+        <span className="report-date">{fmtDate(r.manualDate)}</span>
+        <button
+          className="summarise-btn"
+          onClick={handleSummarise}
+          disabled={summarising}
+        >
+          {summarising ? "Summarising…" : "Summarise"}
+        </button>
+      </div>
+      {sumError && <p className="gemini-error">{sumError}</p>}
+      {summary && (
+        <div className="report-summary">
+          <p className="report-summary-text">{formatSummary(summary)}</p>
+        </div>
+      )}
+    </li>
+  );
+}
 
 function ReportList({ reports, loading, error }) {
   const [page, setPage] = useState(1);
@@ -46,13 +105,7 @@ function ReportList({ reports, loading, error }) {
       </div>
       <ul className="report-list">
         {pageRows.map((r) => (
-          <li key={r.id} className="report-item">
-            <a href={`${CDN_BASE}${r.path}`} target="_blank" rel="noreferrer" className="report-link">
-              <span className="report-icon" aria-hidden="true">📄</span>
-              <span className="report-text">{r.fileText}</span>
-            </a>
-            <span className="report-date">{fmtDate(r.manualDate)}</span>
-          </li>
+          <ReportItem key={r.id} r={r} />
         ))}
       </ul>
       {totalPages > 1 && (

@@ -20,14 +20,10 @@
 }
 
 .report-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   background: #fff;
   border-radius: 8px;
   padding: 0.75rem 1rem;
   box-shadow: 0 1px 6px rgba(0,48,135,0.06);
-  gap: 1rem;
 }
 
 .report-link {
@@ -60,4 +56,45 @@
 .report-empty {
   color: #6b7a99;
   font-size: 0.875rem;
+}
+
+.report-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.summarise-btn {
+  background: #003087;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.summarise-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.report-summary {
+  margin-top: 0.75rem;
+  background: #f4f6fb;
+  border-left: 3px solid #003087;
+  border-radius: 0 6px 6px 0;
+  padding: 0.75rem 1rem;
+}
+
+.report-summary-text {
+  font-size: 0.875rem;
+  color: #1a1a2e;
+  line-height: 1.6;
+  margin: 0;
 }

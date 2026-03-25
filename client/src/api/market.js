@@ -76,3 +76,14 @@ export async function fetchFinancials(symbol) {
   if (!res.ok) throw new Error(data.error || "Failed to fetch financials.");
   return data;
 }
+
+export async function fetchSummarise(pdfUrl) {
+  const res = await fetch(`${BASE_URL}/api/summarise`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ pdfUrl }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to summarise report.");
+  return data.summary;
+}
