@@ -69,3 +69,10 @@ export async function fetchChartData(chartId) {
   if (!res.ok) throw new Error(data.error || "Failed to fetch chart data.");
   return data;
 }
+
+export async function fetchFinancials(symbol) {
+  const res = await fetch(`${BASE_URL}/api/financials/${encodeURIComponent(symbol)}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to fetch financials.");
+  return data;
+}

@@ -30,6 +30,8 @@ router.get("/:symbol", async (req, res) => {
     const com = profile.reqComSumInfo?.[0] ?? {};
 
     res.json({
+      name: si.name,
+      symbol: si.symbol,
       logo: summary.reqLogo?.path ?? null,
       symbolInfo: {
         allHiPrice: si.allHiPrice,
