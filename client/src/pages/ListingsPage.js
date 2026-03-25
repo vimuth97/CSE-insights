@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import companiesData from "../dummy_data/companies.json";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "../styles/listings.css";
-import { fetchIndices } from "../api/market";
+import { fetchIndices, fetchCompanies } from "../api/market";
 
 const fmtPrice = (n) =>
   n != null
@@ -14,14 +13,13 @@ const fmtPrice = (n) =>
     : "—";
 const fmtMarketCap = (n) =>
   n != null ? `LKR ${(n / 1_000_000_000).toFixed(2)}B` : "—";
-const fmtPct = (n) => (n != null ? `${Number(n).toFixed(4)}%` : "—");
+const fmtPct = (n) => (n != null ? `${Number(n).toFixed(2)}%` : "—");
 const fmtQty = (n) => (n != null ? Number(n).toLocaleString("en-LK") : "—");
 const fmtValue = (n) =>
   n != null ? `LKR ${(n / 1_000_000).toFixed(2)}M` : "—";
 const fmtPctChange = (n) =>
   n != null ? `${n >= 0 ? "+" : ""}${Number(n).toFixed(4)}%` : "—";
 
-const COMPANIES = companiesData.reqByMarketcap;
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
 // null-safe comparator: nulls always sort last regardless of direction
@@ -40,6 +38,9 @@ export default function ListingsPage() {
   const [page, setPage] = useState(1);
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
+  const [companies, setCompanies] = useState([]);
+  const [companiesLoading, setCompaniesLoading] = useState(true);
+  const [companiesError, setCompaniesError] = useState("");
 
   const [idxPageSize, setIdxPageSize] = useState(10);
   const [idxPage, setIdxPage] = useState(1);
@@ -50,6 +51,10 @@ export default function ListingsPage() {
   const [indicesError, setIndicesError] = useState("");
 
   useEffect(() => {
+    fetchCompanies()
+      .then((data) => setCompanies(data))
+      .catch((err) => setCompaniesError(err.message))
+      .finally(() => setCompaniesLoading(false));
     fetchIndices()
       .then((data) => setIndices(data))
       .catch((err) => setIndicesError(err.message))
@@ -77,8 +82,8 @@ export default function ListingsPage() {
   }
 
   const sorted = sortKey
-    ? [...COMPANIES].sort((a, b) => cmp(a, b, sortKey, sortDir))
-    : COMPANIES;
+    ? [...companies].sort((a, b) => cmp(a, b, sortKey, sortDir))
+    : companies;
 
   const totalEntries = sorted.length;
   const totalPages = Math.ceil(totalEntries / pageSize);
@@ -152,6 +157,9 @@ export default function ListingsPage() {
         <div className="listings-content">
           <section aria-label="Company Directory">
             <h1 className="listings-heading">Company Directory</h1>
+            {companiesLoading && <p className="loading-msg">Loading companies…</p>}
+            {companiesError && <p className="error-msg">{companiesError}</p>}
+            {!companiesLoading && !companiesError && <>
             <div className="table-controls">
               {/* WCAG 2, 1.3.1: label associated with select */}
               <label className="entries-label" htmlFor="page-size">
@@ -260,10 +268,12 @@ export default function ListingsPage() {
                 »
               </button>
             </nav>
+            </>
+            }
           </section>
           <section
             aria-label="GICS Industry Group Indices"
-            style={{ marginTop: "2rem" }}
+            className="indices-section"
           >
             <h1 className="listings-heading">GICS Industry Group Indices</h1>
             <div className="table-controls">
@@ -290,14 +300,8 @@ export default function ListingsPage() {
                 entries
               </span>
             </div>
-            {indicesLoading && (
-              <p style={{ padding: "1rem" }}>Loading indices…</p>
-            )}
-            {indicesError && (
-              <p style={{ padding: "1rem", color: "#b91c1c" }}>
-                {indicesError}
-              </p>
-            )}
+            {indicesLoading && <p className="loading-msg">Loading indices…</p>}
+            {indicesError && <p className="error-msg">{indicesError}</p>}
             {/* WCAG 2, 1.3.1: scrollable region with label for screen readers */}
             {!indicesLoading && !indicesError && (
               <div
@@ -335,15 +339,13 @@ export default function ListingsPage() {
                         <td className="num">{idx.indexCode ?? "—"}</td>
                         <td className="num">{fmtPrice(idx.indexValue)}</td>
                         <td
-                          className="num"
-                          style={{
-                            color:
-                              idx.percentage > 0
-                                ? "#1a7a3c"
-                                : idx.percentage < 0
-                                  ? "#b91c1c"
-                                  : "inherit",
-                          }}
+                          className={`num ${
+                            idx.percentage > 0
+                              ? "change-up"
+                              : idx.percentage < 0
+                                ? "change-down"
+                                : ""
+                          }`}
                         >
                           {fmtPctChange(idx.percentage)}
                         </td>

@@ -52,7 +52,7 @@ export default function CompanyPage() {
   }
 
   const change = company.change ?? 0;
-  const changeColor = change > 0 ? "#1a7a3c" : change < 0 ? "#b91c1c" : "#555";
+  const changeClass = change > 0 ? "change-up" : change < 0 ? "change-down" : "change-neutral";
 
   return (
     <>
@@ -101,7 +101,7 @@ export default function CompanyPage() {
                 <p className="card-value price-value">
                   LKR {fmt(company.price)}
                 </p>
-                <p className="card-sub" style={{ color: changeColor }}>
+                <p className={`card-sub ${changeClass}`}>
                   {change >= 0 ? "+" : ""}
                   {fmt(company.change)} ({change >= 0 ? "+" : ""}
                   {fmt(company.percentageChange)}%)
@@ -119,10 +119,10 @@ export default function CompanyPage() {
 
               <div className="company-card">
                 <h2 className="card-heading">All-Time High / Low</h2>
-                <p className="card-value" style={{ color: "#1a7a3c" }}>
+                <p className="card-value change-up">
                   LKR {fmt(symbolInfo.allHiPrice)}
                 </p>
-                <p className="card-sub" style={{ color: "#b91c1c" }}>
+                <p className="card-sub change-down">
                   LKR {fmt(symbolInfo.allLowPrice)}
                 </p>
               </div>

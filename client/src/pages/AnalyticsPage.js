@@ -1,5 +1,6 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import "../styles/analytics.css";
 
 export default function AnalyticsPage() {
   const params = new URLSearchParams(window.location.search);
@@ -9,7 +10,7 @@ export default function AnalyticsPage() {
     <>
       <Header />
       {/* WCAG 2, 1.3.1: <main> landmark */}
-      <main style={{ minHeight: "80vh", padding: "2rem", fontFamily: "sans-serif" }}>
+      <main className="analytics-page">
         <h1>Analytics</h1>
         {id && <p>Company ID: {id}</p>}
       </main>

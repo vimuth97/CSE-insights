@@ -48,3 +48,10 @@ export async function fetchMostActive() {
   if (!res.ok) throw new Error(data.error || "Failed to fetch most active.");
   return data;
 }
+
+export async function fetchCompanies() {
+  const res = await fetch(`${BASE_URL}/api/companies`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to fetch companies.");
+  return Array.isArray(data?.reqByMarketcap) ? data.reqByMarketcap : data;
+}

@@ -277,3 +277,7 @@
   background: #b8943e;
   border-color: #b8943e;
 }
+
+.change-up      { color: #1a7a3c; }
+.change-down    { color: #922b21; }
+.change-neutral { color: #555; }

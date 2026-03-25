@@ -9,6 +9,7 @@ const marketStatusRoutes = require("./routes/marketStatus");
 const mainIndicesRoutes = require("./routes/mainIndices");
 const marketSummaryRoutes = require("./routes/marketSummary");
 const marketMoversRoutes = require("./routes/marketMovers");
+const companiesRoutes = require("./routes/companies");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -22,6 +23,7 @@ app.use("/api/marketStatus", marketStatusRoutes);
 app.use("/api/main-indices", mainIndicesRoutes);
 app.use("/api/market-summary", marketSummaryRoutes);
 app.use("/api/market-movers", marketMoversRoutes);
+app.use("/api/companies", companiesRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "CSE Insights API" });

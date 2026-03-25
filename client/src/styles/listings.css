@@ -227,3 +227,18 @@
   color: #5a6a85;
   padding: 0 0.25rem;
 }
+
+.change-up   { color: #1a7a3c; }
+.change-down { color: #922b21; }
+
+.indices-section { margin-top: 2rem; }
+
+.loading-msg {
+  padding: 1rem;
+  color: #5a6a85;
+}
+
+.error-msg {
+  padding: 1rem;
+  color: #922b21;
+}
