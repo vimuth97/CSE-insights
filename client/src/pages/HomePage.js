@@ -8,53 +8,27 @@ import {
   fetchMarketStatus,
   fetchMainIndices,
   fetchMarketSummary,
+  fetchChartData,
 } from "../api/market";
 
 const fmt = (n) => n.toLocaleString("en-LK");
 const fmtCurrency = (n) => `LKR ${(n / 1_000_000).toFixed(2)}M`;
 
-// Mock historical data — replace with API calls
-const ASPI_HISTORY = [
-  { date: "Jul 1", value: 13_540.2 },
-  { date: "Jul 2", value: 13_612.45 },
-  { date: "Jul 3", value: 13_580.1 },
-  { date: "Jul 4", value: 13_650.8 },
-  { date: "Jul 7", value: 13_720.35 },
-  { date: "Jul 8", value: 13_695.6 },
-  { date: "Jul 9", value: 13_760.9 },
-  { date: "Jul 10", value: 13_800.15 },
-  { date: "Jul 11", value: 13_718.4 },
-  { date: "Jul 14", value: 13_842.56 },
-];
-
-const SL20_HISTORY = [
-  { date: "Jul 1", value: 4_310.5 },
-  { date: "Jul 2", value: 4_285.3 },
-  { date: "Jul 3", value: 4_300.75 },
-  { date: "Jul 4", value: 4_260.2 },
-  { date: "Jul 7", value: 4_240.9 },
-  { date: "Jul 8", value: 4_275.6 },
-  { date: "Jul 9", value: 4_290.1 },
-  { date: "Jul 10", value: 4_310.45 },
-  { date: "Jul 11", value: 4_256.89 },
-  { date: "Jul 14", value: 4_218.74 },
-];
+const toChartPoints = (data) => (Array.isArray(data) ? data : []);
 
 export default function HomePage() {
   const [marketData, setMarketData] = useState(null);
   const [indices, setIndices] = useState([]);
   const [summary, setSummary] = useState(null);
+  const [aspiChart, setAspiChart] = useState([]);
+  const [sl20Chart, setSl20Chart] = useState([]);
 
   useEffect(() => {
-    fetchMarketStatus()
-      .then((data) => setMarketData(data))
-      .catch(() => {});
-    fetchMainIndices()
-      .then((data) => setIndices(data))
-      .catch(() => {});
-    fetchMarketSummary()
-      .then((data) => setSummary(data))
-      .catch(() => {});
+    fetchMarketStatus().then(setMarketData).catch(() => {});
+    fetchMainIndices().then(setIndices).catch(() => {});
+    fetchMarketSummary().then(setSummary).catch(() => {});
+    fetchChartData(1).then((d) => setAspiChart(toChartPoints(d))).catch(() => {});
+    fetchChartData(40).then((d) => setSl20Chart(toChartPoints(d))).catch(() => {});
   }, []);
 
   const timestamp = new Date();
@@ -213,7 +187,7 @@ export default function HomePage() {
                 </div>
                 {/* WCAG 2, 1.1.1: aria-label on chart wrapper provides text alternative */}
                 <IndexChart
-                  data={ASPI_HISTORY}
+                  data={aspiChart}
                   dataKey="value"
                   name="ASPI"
                   color="#003087"
@@ -229,7 +203,7 @@ export default function HomePage() {
                 </div>
                 {/* WCAG 2, 1.1.1: aria-label on chart wrapper provides text alternative */}
                 <IndexChart
-                  data={SL20_HISTORY}
+                  data={sl20Chart}
                   dataKey="value"
                   name="S&P SL20"
                   color="#c9a84c"

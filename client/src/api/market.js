@@ -62,3 +62,10 @@ export async function fetchCompany(symbol) {
   if (!res.ok) throw new Error(data.error || "Failed to fetch company.");
   return data;
 }
+
+export async function fetchChartData(chartId) {
+  const res = await fetch(`${BASE_URL}/api/main-indices/chart/${chartId}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to fetch chart data.");
+  return data;
+}
