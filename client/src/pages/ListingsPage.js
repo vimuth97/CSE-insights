@@ -157,119 +157,124 @@ export default function ListingsPage() {
         <div className="listings-content">
           <section aria-label="Company Directory">
             <h1 className="listings-heading">Company Directory</h1>
-            {companiesLoading && <p className="loading-msg">Loading companies…</p>}
+            {companiesLoading && (
+              <p className="loading-msg">Loading companies…</p>
+            )}
             {companiesError && <p className="error-msg">{companiesError}</p>}
-            {!companiesLoading && !companiesError && <>
-            <div className="table-controls">
-              {/* WCAG 2, 1.3.1: label associated with select */}
-              <label className="entries-label" htmlFor="page-size">
-                Show
-                <select
-                  id="page-size"
-                  className="entries-select"
-                  value={pageSize}
-                  onChange={handlePageSize}
-                >
-                  {PAGE_SIZE_OPTIONS.map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-                entries
-              </label>
-              <span className="entries-info" aria-live="polite">
-                Showing {totalEntries === 0 ? 0 : start + 1}–
-                {Math.min(start + pageSize, totalEntries)} of {totalEntries}{" "}
-                entries
-              </span>
-            </div>
-            {/* WCAG 2, 1.3.1: scrollable region with label for screen readers */}
-            <div
-              className="table-wrapper"
-              role="region"
-              aria-label="Company Directory table"
-              tabIndex="0"
-            >
-              <table className="market-table">
-                <thead>
-                  <tr>
-                    <SortTh label="Company" field="name" />
-                    {/* WCAG 2, 4.1.2: non-sortable column has no aria-sort */}
-                    <th scope="col">Symbol</th>
-                    <SortTh label="Price (LKR)" field="price" />
-                    <SortTh label="Market Cap" field="marketCap" />
-                    <SortTh label="Mkt Cap %" field="marketCapPercentage" />
-                    <SortTh label="Issued Qty" field="issuedQTY" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {pageRows.map((c, i) => (
-                    <tr
-                      key={c.id}
-                      className={i % 2 === 0 ? "row-odd" : "row-even"}
+            {!companiesLoading && !companiesError && (
+              <>
+                <div className="table-controls">
+                  {/* WCAG 2, 1.3.1: label associated with select */}
+                  <label className="entries-label" htmlFor="page-size">
+                    Show
+                    <select
+                      id="page-size"
+                      className="entries-select"
+                      value={pageSize}
+                      onChange={handlePageSize}
                     >
-                      <td className="company-name">
-                        <a
-                          href={`/company?id=${c.id}`}
-                          className="company-link"
+                      {PAGE_SIZE_OPTIONS.map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+                    entries
+                  </label>
+                  <span className="entries-info" aria-live="polite">
+                    Showing {totalEntries === 0 ? 0 : start + 1}–
+                    {Math.min(start + pageSize, totalEntries)} of {totalEntries}{" "}
+                    entries
+                  </span>
+                </div>
+                {/* WCAG 2, 1.3.1: scrollable region with label for screen readers */}
+                <div
+                  className="table-wrapper"
+                  role="region"
+                  aria-label="Company Directory table"
+                  tabIndex="0"
+                >
+                  <table className="market-table">
+                    <thead>
+                      <tr>
+                        <SortTh label="Company" field="name" />
+                        {/* WCAG 2, 4.1.2: non-sortable column has no aria-sort */}
+                        <th scope="col">Symbol</th>
+                        <SortTh label="Price (LKR)" field="price" />
+                        <SortTh label="Market Cap" field="marketCap" />
+                        <SortTh label="Mkt Cap %" field="marketCapPercentage" />
+                        <SortTh label="Issued Qty" field="issuedQTY" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageRows.map((c, i) => (
+                        <tr
+                          key={c.id}
+                          className={i % 2 === 0 ? "row-odd" : "row-even"}
                         >
-                          {c.name}
-                        </a>
-                      </td>
-                      <td className="company-symbol">{c.symbol}</td>
-                      <td className="num">{fmtPrice(c.price)}</td>
-                      <td className="num">{fmtMarketCap(c.marketCap)}</td>
-                      <td className="num">{fmtPct(c.marketCapPercentage)}</td>
-                      <td className="num">{fmtQty(c.issuedQTY)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {/* WCAG 2, 4.1.2: pagination nav with aria-label */}
-            <nav
-              className="pagination"
-              aria-label="Company Directory pagination"
-            >
-              <button
-                className="page-btn"
-                onClick={() => setPage(1)}
-                disabled={page === 1}
-                aria-label="First page"
-              >
-                «
-              </button>
-              <button
-                className="page-btn"
-                onClick={() => setPage((p) => p - 1)}
-                disabled={page === 1}
-                aria-label="Previous page"
-              >
-                ‹
-              </button>
-              <span className="page-indicator" aria-current="true">
-                Page {page} of {totalPages}
-              </span>
-              <button
-                className="page-btn"
-                onClick={() => setPage((p) => p + 1)}
-                disabled={page === totalPages}
-                aria-label="Next page"
-              >
-                ›
-              </button>
-              <button
-                className="page-btn"
-                onClick={() => setPage(totalPages)}
-                disabled={page === totalPages}
-                aria-label="Last page"
-              >
-                »
-              </button>
-            </nav>
-            </>
-            }
+                          <td className="company-name">
+                            <a
+                              href={`/company?symbol=${encodeURIComponent(c.symbol)}`}
+                              className="company-link"
+                            >
+                              {c.name}
+                            </a>
+                          </td>
+                          <td className="company-symbol">{c.symbol}</td>
+                          <td className="num">{fmtPrice(c.price)}</td>
+                          <td className="num">{fmtMarketCap(c.marketCap)}</td>
+                          <td className="num">
+                            {fmtPct(c.marketCapPercentage)}
+                          </td>
+                          <td className="num">{fmtQty(c.issuedQTY)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* WCAG 2, 4.1.2: pagination nav with aria-label */}
+                <nav
+                  className="pagination"
+                  aria-label="Company Directory pagination"
+                >
+                  <button
+                    className="page-btn"
+                    onClick={() => setPage(1)}
+                    disabled={page === 1}
+                    aria-label="First page"
+                  >
+                    «
+                  </button>
+                  <button
+                    className="page-btn"
+                    onClick={() => setPage((p) => p - 1)}
+                    disabled={page === 1}
+                    aria-label="Previous page"
+                  >
+                    ‹
+                  </button>
+                  <span className="page-indicator" aria-current="true">
+                    Page {page} of {totalPages}
+                  </span>
+                  <button
+                    className="page-btn"
+                    onClick={() => setPage((p) => p + 1)}
+                    disabled={page === totalPages}
+                    aria-label="Next page"
+                  >
+                    ›
+                  </button>
+                  <button
+                    className="page-btn"
+                    onClick={() => setPage(totalPages)}
+                    disabled={page === totalPages}
+                    aria-label="Last page"
+                  >
+                    »
+                  </button>
+                </nav>
+              </>
+            )}
           </section>
           <section
             aria-label="GICS Industry Group Indices"

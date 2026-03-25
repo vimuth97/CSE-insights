@@ -55,3 +55,10 @@ export async function fetchCompanies() {
   if (!res.ok) throw new Error(data.error || "Failed to fetch companies.");
   return Array.isArray(data?.reqByMarketcap) ? data.reqByMarketcap : data;
 }
+
+export async function fetchCompany(symbol) {
+  const res = await fetch(`${BASE_URL}/api/companies/${encodeURIComponent(symbol)}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to fetch company.");
+  return data;
+}

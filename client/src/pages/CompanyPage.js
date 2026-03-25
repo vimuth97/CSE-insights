@@ -1,8 +1,8 @@
-import companiesData from "../dummy_data/companies.json";
-import companyDetail from "../dummy_data/company.json";
+import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "../styles/company.css";
+import { fetchCompanies, fetchCompany } from "../api/market";
 
 const QUARTER_LABELS = {
   1: "Q1 (31st Mar)",
@@ -10,16 +10,6 @@ const QUARTER_LABELS = {
   3: "Q3 (30th Sep)",
   4: "Q4 (31st Dec)",
 };
-const comSumInfo = companyDetail.companyProfile.reqComSumInfo[0];
-const symbolInfo = companyDetail.reqSymbolInfo;
-const betaInfo = companyDetail.reqSymbolBetaInfo;
-const businessSummary = companyDetail.companyProfile.infoCompanyBusinessSummary
-  .map((s) => s.body)
-  .join(" ");
-const finYearEnd =
-  QUARTER_LABELS[comSumInfo.finYearEnd] ?? `Q${comSumInfo.finYearEnd}`;
-const directors = companyDetail.companyProfile.infoCompanyDirector;
-const topPosts = companyDetail.companyProfile.topPosts;
 
 const LOGO_BASE = "https://cdn.cse.lk/cmt/";
 
@@ -36,23 +26,65 @@ const fmtQty = (n) => (n != null ? Number(n).toLocaleString("en-LK") : "—");
 
 export default function CompanyPage() {
   const params = new URLSearchParams(window.location.search);
-  const id = Number(params.get("id"));
-  const company = companiesData.reqByMarketcap.find((c) => c.id === id);
+  const symbol = params.get("symbol");
 
-  if (!company) {
+  const [company, setCompany] = useState(null);
+  const [detail, setDetail] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!symbol) {
+      setError("Invalid company.");
+      setLoading(false);
+      return;
+    }
+    Promise.all([fetchCompanies(), fetchCompany(symbol)])
+      .then(([companies, det]) => {
+        const found = companies.find((c) => c.symbol === symbol);
+        if (!found) throw new Error("Company not found.");
+        setCompany(found);
+        setDetail(det);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [symbol]);
+
+  if (loading)
     return (
       <>
         <Header />
         <main className="company-page">
-          <p className="company-not-found">Company not found.</p>
+          <p className="loading-msg">Loading…</p>
         </main>
         <Footer />
       </>
     );
-  }
+  if (error || !company || !detail)
+    return (
+      <>
+        <Header />
+        <main className="company-page">
+          <p className="company-not-found">{error || "Company not found."}</p>
+        </main>
+        <Footer />
+      </>
+    );
 
+  const {
+    symbolInfo,
+    betaInfo,
+    companyInfo,
+    businessSummary,
+    directors,
+    topPosts,
+    logo,
+  } = detail;
   const change = company.change ?? 0;
-  const changeClass = change > 0 ? "change-up" : change < 0 ? "change-down" : "change-neutral";
+  const changeClass =
+    change > 0 ? "change-up" : change < 0 ? "change-down" : "change-neutral";
+  const finYearEnd =
+    QUARTER_LABELS[companyInfo.finYearEnd] ?? `Q${companyInfo.finYearEnd}`;
 
   return (
     <>
@@ -61,10 +93,10 @@ export default function CompanyPage() {
       <main className="company-page" aria-label={`${company.name} profile`}>
         <div className="company-content">
           <div className="company-header">
-            {company.logoUrl ? (
+            {logo ? (
               <img
                 className="company-logo"
-                src={`${LOGO_BASE}${company.logoUrl}`}
+                src={`${LOGO_BASE}${logo}`}
                 alt={`${company.name} logo`}
                 onError={(e) => {
                   e.target.style.display = "none";
@@ -86,7 +118,7 @@ export default function CompanyPage() {
             <h2 className="page-section-heading">
               Financial Summary
               <a
-                href={`/analytics?id=${company.id}`}
+                href={`/analytics?symbol=${encodeURIComponent(symbol)}`}
                 className="analytics-btn"
                 aria-label={`View analytics for ${company.name}`}
               >
@@ -120,10 +152,10 @@ export default function CompanyPage() {
               <div className="company-card">
                 <h2 className="card-heading">All-Time High / Low</h2>
                 <p className="card-value change-up">
-                  LKR {fmt(symbolInfo.allHiPrice)}
+                  LKR {fmt(symbolInfo?.allHiPrice)}
                 </p>
                 <p className="card-sub change-down">
-                  LKR {fmt(symbolInfo.allLowPrice)}
+                  LKR {fmt(symbolInfo?.allLowPrice)}
                 </p>
               </div>
 
@@ -142,7 +174,7 @@ export default function CompanyPage() {
 
               <div className="company-card">
                 <h2 className="card-heading">Financial Year Ending</h2>
-                <p className="card-value">{finYearEnd}</p>
+                <p className="card-value">{finYearEnd ?? "—"}</p>
               </div>
 
               <div className="company-card">
@@ -163,25 +195,25 @@ export default function CompanyPage() {
                 <div className="turnover-item">
                   <span className="turnover-label">Today</span>
                   <span className="turnover-value">
-                    LKR {fmt(symbolInfo.tdyTurnover)}
+                    LKR {fmt(symbolInfo?.tdyTurnover)}
                   </span>
                 </div>
                 <div className="turnover-item">
                   <span className="turnover-label">Week to Date</span>
                   <span className="turnover-value">
-                    LKR {fmt(symbolInfo.wtdTurnover)}
+                    LKR {fmt(symbolInfo?.wtdTurnover)}
                   </span>
                 </div>
                 <div className="turnover-item">
                   <span className="turnover-label">Month to Date</span>
                   <span className="turnover-value">
-                    LKR {fmt(symbolInfo.mtdTurnover)}
+                    LKR {fmt(symbolInfo?.mtdTurnover)}
                   </span>
                 </div>
                 <div className="turnover-item">
                   <span className="turnover-label">Year to Date</span>
                   <span className="turnover-value">
-                    LKR {fmt(symbolInfo.ytdTurnover)}
+                    LKR {fmt(symbolInfo?.ytdTurnover)}
                   </span>
                 </div>
               </div>
@@ -190,19 +222,19 @@ export default function CompanyPage() {
             {/* Beta section */}
             <div className="company-card company-section-card">
               <h2 className="section-heading">
-                Beta Values ({betaInfo.triASIBetaPeriod} Q{betaInfo.quarter})
+                Beta Values ({betaInfo?.triASIBetaPeriod} Q{betaInfo?.quarter})
               </h2>
               <div className="turnover-grid">
                 <div className="turnover-item">
                   <span className="turnover-label">vs ASPI</span>
                   <span className="turnover-value">
-                    {fmt(betaInfo.triASIBetaValue, 4)}
+                    {fmt(betaInfo?.triASIBetaValue, 4)}
                   </span>
                 </div>
                 <div className="turnover-item">
                   <span className="turnover-label">vs S&amp;P SL20</span>
                   <span className="turnover-value">
-                    {fmt(betaInfo.betaValueSPSL, 4)}
+                    {fmt(betaInfo?.betaValueSPSL, 4)}
                   </span>
                 </div>
               </div>
@@ -253,25 +285,25 @@ export default function CompanyPage() {
                 <div className="detail-item">
                   <span className="turnover-label">Founded</span>
                   <span className="turnover-value">
-                    {comSumInfo.established ?? "—"}
+                    {companyInfo.established ?? "—"}
                   </span>
                 </div>
                 <div className="detail-item">
                   <span className="turnover-label">GICS Industry Group</span>
                   <span className="turnover-value">
-                    {comSumInfo.sector ?? "—"}
+                    {companyInfo.sector ?? "—"}
                   </span>
                 </div>
                 <div className="detail-item">
                   <span className="turnover-label">Board</span>
                   <span className="turnover-value">
-                    {comSumInfo.boardType ?? "—"}
+                    {companyInfo.boardType ?? "—"}
                   </span>
                 </div>
                 <div className="detail-item">
                   <span className="turnover-label">Auditors</span>
                   <span className="turnover-value">
-                    {comSumInfo.auditors ?? "—"}
+                    {companyInfo.auditors ?? "—"}
                   </span>
                 </div>
               </div>
@@ -284,30 +316,30 @@ export default function CompanyPage() {
                 <div className="detail-item">
                   <span className="turnover-label">Address</span>
                   <span className="turnover-value">
-                    {comSumInfo.registeredOffice?.trim() ?? "—"}
+                    {companyInfo.registeredOffice?.trim() ?? "—"}
                   </span>
                 </div>
                 <div className="detail-item">
                   <span className="turnover-label">Telephone</span>
                   <span className="turnover-value">
-                    {comSumInfo.tel1 ?? "—"}
+                    {companyInfo.tel1 ?? "—"}
                   </span>
                 </div>
                 <div className="detail-item">
                   <span className="turnover-label">Fax</span>
                   <span className="turnover-value">
-                    {comSumInfo.fax ?? "—"}
+                    {companyInfo.fax ?? "—"}
                   </span>
                 </div>
                 <div className="detail-item">
                   <span className="turnover-label">Email</span>
                   <span className="turnover-value">
-                    {comSumInfo.email1 ? (
+                    {companyInfo.email1 ? (
                       <a
-                        href={`mailto:${comSumInfo.email1}`}
+                        href={`mailto:${companyInfo.email1}`}
                         className="contact-link"
                       >
-                        {comSumInfo.email1}
+                        {companyInfo.email1}
                       </a>
                     ) : (
                       "—"
@@ -317,14 +349,14 @@ export default function CompanyPage() {
                 <div className="detail-item">
                   <span className="turnover-label">Website</span>
                   <span className="turnover-value">
-                    {comSumInfo.web ? (
+                    {companyInfo.web ? (
                       <a
-                        href={`https://${comSumInfo.web}`}
+                        href={`https://${companyInfo.web}`}
                         target="_blank"
                         rel="noreferrer"
                         className="contact-link"
                       >
-                        {comSumInfo.web}
+                        {companyInfo.web}
                       </a>
                     ) : (
                       "—"

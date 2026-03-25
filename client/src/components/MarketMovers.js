@@ -147,8 +147,8 @@ export default function MarketMovers() {
                   <span className="msr-rank" style={{ color: config.accent }}>
                     {i + 1}
                   </span>
-                  <a href={`/company?id=${c.securityId}`} className="msr-name">
-                    {c.symbol}
+                  <a href={`/company?symbol=${encodeURIComponent(c.symbol)}`} className="msr-name">
+                    {c.companyName || c.symbol}
                   </a>
                   <span className="msr-symbol">{c.symbol}</span>
                   <span className="msr-metric">
