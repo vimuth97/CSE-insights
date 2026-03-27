@@ -12,6 +12,7 @@ const marketMoversRoutes = require("./routes/marketMovers");
 const companiesRoutes = require("./routes/companies");
 const financialsRoutes = require("./routes/financials");
 const summariseRoutes = require("./routes/summarise");
+const analyticsExtractRoutes = require("./routes/analyticsExtract");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -28,6 +29,7 @@ app.use("/api/market-movers", marketMoversRoutes);
 app.use("/api/companies", companiesRoutes);
 app.use("/api/financials", financialsRoutes);
 app.use("/api/summarise", summariseRoutes);
+app.use("/api/analytics", analyticsExtractRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "CSE Insights API" });

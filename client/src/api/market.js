@@ -77,6 +77,13 @@ export async function fetchFinancials(symbol) {
   return data;
 }
 
+export async function fetchAnalytics(symbol) {
+  const res = await fetch(`${BASE_URL}/api/analytics/${encodeURIComponent(symbol)}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Failed to fetch analytics.");
+  return data;
+}
+
 export async function fetchSummarise(pdfUrl) {
   const res = await fetch(`${BASE_URL}/api/summarise`, {
     method: "POST",
