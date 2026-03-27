@@ -11,7 +11,7 @@ const QUARTER_LABELS = {
   4: "Q4 (31st Dec)",
 };
 
-const LOGO_BASE = "https://cdn.cse.lk/cmt/";
+const LOGO_BASE = process.env.REACT_APP_LOGO_BASE;
 
 const fmt = (n, decimals = 2) =>
   n != null

@@ -42,7 +42,11 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 
   // Run analytics extraction at 11:59 PM on the last day of every month
-  cron.schedule("59 23 L * *", () => {
+  cron.schedule("59 23 * * *", () => {
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Colombo" }));
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    if (tomorrow.getDate() !== 1) return; // not last day of month
     console.log("[Cron] Running monthly analytics extraction...");
     runAnalyticsExtract().catch((err) =>
       console.error("[Cron] Analytics extraction failed:", err.message)

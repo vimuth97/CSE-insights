@@ -4,7 +4,7 @@ const { GoogleGenAI } = require("@google/genai");
 const db = require("../db");
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-const CDN_BASE = "https://cdn.cse.lk/";
+const CDN_BASE = process.env.CSE_CDN_BASE;
 
 const PROMPT = (text) => `
 You are a financial analyst. Extract the following metrics from this annual report.
@@ -35,11 +35,16 @@ ${text}
 async function extractForSymbol(symbol) {
   const form = new URLSearchParams();
   form.append("symbol", symbol);
-  const finRes = await fetch(`${process.env.CSE_API_URL}financials`, { method: "POST", body: form });
+  const finRes = await fetch(`${process.env.CSE_API_URL}financials`, {
+    method: "POST",
+    body: form,
+  });
   if (!finRes.ok) throw new Error(`CSE financials error: ${finRes.status}`);
   const finData = await finRes.json();
 
-  const annualReports = (finData.infoAnnualData ?? []).sort((a, b) => b.manualDate - a.manualDate);
+  const annualReports = (finData.infoAnnualData ?? []).sort(
+    (a, b) => b.manualDate - a.manualDate,
+  );
   if (!annualReports.length) throw new Error("No annual reports found.");
 
   const pdfUrl = `${CDN_BASE}${annualReports[0].path}`;
@@ -50,22 +55,34 @@ async function extractForSymbol(symbol) {
   const { text } = await pdfParse(buffer);
   if (!text?.trim()) throw new Error("Could not extract text from PDF.");
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: PROMPT(text),
-  });
+  // Truncate to reduce token usage - key financials are usually in first 100k chars
+  const truncated = text.slice(0, 400000);
 
-  // Retry once on rate limit
+  async function callGemini() {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: PROMPT(truncated),
+    });
+    return response.text.replace(/```json|```/g, "").trim();
+  }
+
   let raw;
   try {
-    raw = response.text.replace(/```json|```/g, "").trim();
-  } catch {
-    await new Promise((r) => setTimeout(r, 60000));
-    const retry = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: PROMPT(text),
-    });
-    raw = retry.text.replace(/```json|```/g, "").trim();
+    raw = await callGemini();
+  } catch (err) {
+    // Parse retry delay from error message
+    const match =
+      JSON.stringify(err).match(
+        /retryDelay&quot;:&quot;(\d+)s|retry in ([\d.]+)s/i,
+      ) || JSON.stringify(err).match(/(\d+\.?\d*)s/);
+    const waitMs = match
+      ? Math.ceil(parseFloat(match[1] || match[2])) * 1000 + 2000
+      : 65000;
+    console.log(
+      `[Analytics Extract] Rate limited, waiting ${waitMs / 1000}s...`,
+    );
+    await new Promise((r) => setTimeout(r, waitMs));
+    raw = await callGemini();
   }
   let metrics;
   try {
@@ -76,19 +93,24 @@ async function extractForSymbol(symbol) {
 
   await db.execute(
     "INSERT INTO analytics (company, eps, book_value, roe, net_profit, operating_margin, revenue_growth, earning_growth, de_ratio, current_ratio) " +
-    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-    "ON DUPLICATE KEY UPDATE " +
-    "eps = VALUES(eps), book_value = VALUES(book_value), roe = VALUES(roe), " +
-    "net_profit = VALUES(net_profit), operating_margin = VALUES(operating_margin), " +
-    "revenue_growth = VALUES(revenue_growth), earning_growth = VALUES(earning_growth), " +
-    "de_ratio = VALUES(de_ratio), current_ratio = VALUES(current_ratio)",
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+      "ON DUPLICATE KEY UPDATE " +
+      "eps = VALUES(eps), book_value = VALUES(book_value), roe = VALUES(roe), " +
+      "net_profit = VALUES(net_profit), operating_margin = VALUES(operating_margin), " +
+      "revenue_growth = VALUES(revenue_growth), earning_growth = VALUES(earning_growth), " +
+      "de_ratio = VALUES(de_ratio), current_ratio = VALUES(current_ratio)",
     [
       symbol,
-      metrics.eps ?? null, metrics.book_value ?? null, metrics.roe ?? null,
-      metrics.net_profit ?? null, metrics.operating_margin ?? null,
-      metrics.revenue_growth ?? null, metrics.earning_growth ?? null,
-      metrics.de_ratio ?? null, metrics.current_ratio ?? null,
-    ]
+      metrics.eps ?? null,
+      metrics.book_value ?? null,
+      metrics.roe ?? null,
+      metrics.net_profit ?? null,
+      metrics.operating_margin ?? null,
+      metrics.revenue_growth ?? null,
+      metrics.earning_growth ?? null,
+      metrics.de_ratio ?? null,
+      metrics.current_ratio ?? null,
+    ],
   );
 
   return metrics;
@@ -99,11 +121,15 @@ async function run() {
   const symbols = rows.map((r) => r.company);
 
   // Only process companies that don't have data yet (eps is null)
-  const [doneRows] = await db.execute("SELECT company FROM analytics WHERE eps IS NOT NULL");
+  const [doneRows] = await db.execute(
+    "SELECT company FROM analytics WHERE eps IS NOT NULL",
+  );
   const done = new Set(doneRows.map((r) => r.company));
   const pending = symbols.filter((s) => !done.has(s));
 
-  console.log(`[Analytics Extract] ${done.size} already done, ${pending.length} remaining...`);
+  console.log(
+    `[Analytics Extract] ${done.size} already done, ${pending.length} remaining...`,
+  );
 
   for (const symbol of pending) {
     try {
@@ -112,12 +138,12 @@ async function run() {
     } catch (err) {
       console.error(`[Analytics Extract] ✗ ${symbol}: ${err.message}`);
     }
-    // 5s delay between each to respect Gemini rate limits
-    await new Promise((r) => setTimeout(r, 5000));
-    // Extra 30s pause every 10 companies
+    // 10s delay between each to respect Gemini rate limits
+    await new Promise((r) => setTimeout(r, 10000));
+    // Extra 60s pause every 10 companies
     if (pending.indexOf(symbol) % 10 === 9) {
-      console.log("[Analytics Extract] Pausing 30s to avoid rate limits...");
-      await new Promise((r) => setTimeout(r, 30000));
+      console.log("[Analytics Extract] Pausing 60s to avoid rate limits...");
+      await new Promise((r) => setTimeout(r, 60000));
     }
   }
 
@@ -127,8 +153,10 @@ async function run() {
 module.exports = { run };
 
 if (require.main === module) {
-  run().then(() => process.exit(0)).catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
+  run()
+    .then(() => process.exit(0))
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
 }

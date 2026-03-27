@@ -5,7 +5,7 @@ let symbolMap = {};
 
 const loadSymbolMap = async () => {
   try {
-    const res = await fetch("https://www.cse.lk/chat/company_symbol_list.csv");
+    const res = await fetch(process.env.CSE_SYMBOL_LIST_URL);
     const text = await res.text();
     symbolMap = {};
     for (const line of text.trim().split("\n").slice(1)) {

@@ -12,9 +12,9 @@ import {
   fetchAnalytics,
 } from "../api/market";
 
-const LOGO_BASE = "https://cdn.cse.lk/cmt/";
-const CDN_BASE = "https://cdn.cse.lk/";
-const CSE_OVERALL_PE = parseFloat(process.env.CSE_OVERALL_PE);
+const LOGO_BASE = process.env.REACT_APP_LOGO_BASE;
+const CDN_BASE = process.env.REACT_APP_CDN_BASE;
+const CSE_OVERALL_PE = parseFloat(process.env.REACT_APP_CSE_OVERALL_PE);
 
 const byUploadedDesc = (a, b) => b.manualDate - a.manualDate;
 
@@ -180,29 +180,44 @@ function ReportList({ reports, loading, error }) {
 const fmt2 = (n) => (n != null ? Number(n).toFixed(2) : "—");
 
 function calcScore(a, price) {
+  // --- Helper: clamp between 0 and 1 ---
+  const clamp = (v) => Math.max(0, Math.min(1, v));
+
+  // --- Ratios ---
   const pe = price && a.eps ? price / a.eps : null;
   const pbv = price && a.book_value ? price / a.book_value : null;
   const peg = pe && a.earning_growth ? pe / a.earning_growth : null;
 
-  const spe = pe != null ? Math.min(1, CSE_OVERALL_PE / pe) : null;
-  const spbv = pbv != null ? Math.min(1, 3 / pbv) : null;
-  const speg = peg != null ? Math.min(1, 1 / peg) : null;
+  // --- Valuation (lower is better) ---
+  const spe = pe != null ? clamp(CSE_OVERALL_PE / pe) : null;
+  const spbv = pbv != null ? clamp(3 / pbv) : null;
+  const speg = peg != null ? clamp(1 / peg) : null;
 
-  const sroe = a.roe != null ? Math.min(1, a.roe / 20) : null;
-  const smargin = a.net_profit != null ? Math.min(1, a.net_profit / 15) : null;
+  // --- Profitability (higher is better) ---
+  const sroe = a.roe != null ? clamp(a.roe / 20) : null;
+  const smargin = a.net_profit != null ? clamp(a.net_profit / 15) : null;
   const sopmargin =
-    a.operating_margin != null ? Math.min(1, a.operating_margin / 15) : null;
+    a.operating_margin != null ? clamp(a.operating_margin / 15) : null;
 
+  // --- Growth (higher is better) ---
   const srevgrowth =
-    a.revenue_growth != null ? Math.min(1, a.revenue_growth / 10) : null;
+    a.revenue_growth != null ? clamp(a.revenue_growth / 10) : null;
   const searngrowth =
-    a.earning_growth != null ? Math.min(1, a.earning_growth / 10) : null;
+    a.earning_growth != null ? clamp(a.earning_growth / 10) : null;
 
+  // --- Financial Health ---
   const sdebt =
-    a.de_ratio != null && a.de_ratio > 0 ? Math.min(1, 1 / a.de_ratio) : null;
-  const scurrent =
-    a.current_ratio != null ? Math.min(1, a.current_ratio / 2) : null;
+    a.de_ratio != null
+      ? a.de_ratio < 0
+        ? 0  // negative equity = worst financial health
+        : a.de_ratio === 0
+          ? 1  // zero debt = perfect
+          : clamp(1 / a.de_ratio)
+      : null;
 
+  const scurrent = a.current_ratio != null ? clamp(a.current_ratio / 2) : null;
+
+  // --- Average helper ---
   const avg = (vals) => {
     const valid = vals.filter((v) => v != null);
     return valid.length
@@ -210,25 +225,30 @@ function calcScore(a, price) {
       : null;
   };
 
+  // --- Category scores ---
   const valuation = avg([spe, spbv, speg]);
   const profitability = avg([sroe, smargin, sopmargin]);
   const growth = avg([srevgrowth, searngrowth]);
   const health = avg([sdebt, scurrent]);
 
-  const components = [valuation, profitability, growth, health];
-  if (components.some((c) => c == null)) return null;
+  const weights = { valuation: 0.25, profitability: 0.30, growth: 0.25, health: 0.20 };
+  const categories = { valuation, profitability, growth, health };
 
-  const score =
-    0.25 * valuation + 0.3 * profitability + 0.25 * growth + 0.2 * health;
+  const available = Object.entries(categories).filter(([, v]) => v != null);
+  if (!available.length) return null;
 
+  const totalWeight = available.reduce((s, [k]) => s + weights[k], 0);
+  const score = available.reduce((s, [k, v]) => s + (weights[k] / totalWeight) * v, 0);
+
+  // --- Rating ---
   let rating, ratingClass;
-  if (score >= 0.8) {
+  if (score >= 0.80) {
     rating = "Strong Buy";
     ratingClass = "rating-strong-buy";
-  } else if (score >= 0.6) {
+  } else if (score >= 0.60) {
     rating = "Buy";
     ratingClass = "rating-buy";
-  } else if (score >= 0.4) {
+  } else if (score >= 0.40) {
     rating = "Hold";
     ratingClass = "rating-hold";
   } else {
@@ -301,26 +321,17 @@ function FinancialMetrics({ a }) {
           </div>
           <div className="score-breakdown">
             {[
-              { label: "Valuation", val: result.valuation, weight: "25%" },
-              {
-                label: "Profitability",
-                val: result.profitability,
-                weight: "30%",
-              },
-              { label: "Growth", val: result.growth, weight: "25%" },
-              { label: "Health", val: result.health, weight: "20%" },
+              { label: "Valuation",     val: result.valuation,     weight: "25%" },
+              { label: "Profitability", val: result.profitability, weight: "30%" },
+              { label: "Growth",        val: result.growth,        weight: "25%" },
+              { label: "Health",        val: result.health,        weight: "20%" },
             ].map(({ label, val, weight }) => (
               <div key={label} className="score-bar-row">
-                <span className="score-bar-label">
-                  {label} <span className="score-weight">({weight})</span>
-                </span>
+                <span className="score-bar-label">{label} <span className="score-weight">({weight})</span></span>
                 <div className="score-bar-track">
-                  <div
-                    className="score-bar-fill"
-                    style={{ width: `${(val * 100).toFixed(1)}%` }}
-                  />
+                  <div className="score-bar-fill" style={{ width: val != null ? `${(val * 100).toFixed(1)}%` : "0%" }} />
                 </div>
-                <span className="score-bar-pct">{(val * 100).toFixed(0)}</span>
+                <span className="score-bar-pct">{val != null ? (val * 100).toFixed(0) : "N/A"}</span>
               </div>
             ))}
           </div>

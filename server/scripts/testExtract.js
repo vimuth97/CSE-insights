@@ -4,7 +4,7 @@ const { GoogleGenAI } = require("@google/genai");
 const db = require("../db");
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-const CDN_BASE = "https://cdn.cse.lk/";
+const CDN_BASE = process.env.CSE_CDN_BASE;
 
 const PROMPT = (text) => `
 You are a financial analyst. Extract the following metrics from this annual report.

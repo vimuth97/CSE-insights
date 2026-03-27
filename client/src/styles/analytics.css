@@ -58,6 +58,12 @@
   font-size: 0.875rem;
 }
 
+.gemini-error {
+  margin-top: 0.5rem;
+  color: #922b21;
+  font-size: 0.875rem;
+}
+
 .metrics-sections {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
