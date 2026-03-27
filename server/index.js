@@ -14,6 +14,9 @@ const financialsRoutes = require("./routes/financials");
 const summariseRoutes = require("./routes/summarise");
 const analyticsExtractRoutes = require("./routes/analyticsExtract");
 
+const cron = require("node-cron");
+const { run: runAnalyticsExtract } = require("./scripts/extractAnalytics");
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -37,4 +40,14 @@ app.get("/", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+
+  // Run analytics extraction at 11:59 PM on the last day of every month
+  cron.schedule("59 23 L * *", () => {
+    console.log("[Cron] Running monthly analytics extraction...");
+    runAnalyticsExtract().catch((err) =>
+      console.error("[Cron] Analytics extraction failed:", err.message)
+    );
+  }, { timezone: "Asia/Colombo" });
+
+  console.log("[Cron] Analytics extraction scheduled for last day of each month at 23:59 Colombo time.");
 });

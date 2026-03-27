@@ -14,6 +14,7 @@ import {
 
 const LOGO_BASE = "https://cdn.cse.lk/cmt/";
 const CDN_BASE = "https://cdn.cse.lk/";
+const CSE_OVERALL_PE = parseFloat(process.env.CSE_OVERALL_PE);
 
 const byUploadedDesc = (a, b) => b.manualDate - a.manualDate;
 
@@ -178,13 +179,88 @@ function ReportList({ reports, loading, error }) {
 
 const fmt2 = (n) => (n != null ? Number(n).toFixed(2) : "—");
 
+function calcScore(a, price) {
+  const pe = price && a.eps ? price / a.eps : null;
+  const pbv = price && a.book_value ? price / a.book_value : null;
+  const peg = pe && a.earning_growth ? pe / a.earning_growth : null;
+
+  const spe = pe != null ? Math.min(1, CSE_OVERALL_PE / pe) : null;
+  const spbv = pbv != null ? Math.min(1, 3 / pbv) : null;
+  const speg = peg != null ? Math.min(1, 1 / peg) : null;
+
+  const sroe = a.roe != null ? Math.min(1, a.roe / 20) : null;
+  const smargin = a.net_profit != null ? Math.min(1, a.net_profit / 15) : null;
+  const sopmargin =
+    a.operating_margin != null ? Math.min(1, a.operating_margin / 15) : null;
+
+  const srevgrowth =
+    a.revenue_growth != null ? Math.min(1, a.revenue_growth / 10) : null;
+  const searngrowth =
+    a.earning_growth != null ? Math.min(1, a.earning_growth / 10) : null;
+
+  const sdebt =
+    a.de_ratio != null && a.de_ratio > 0 ? Math.min(1, 1 / a.de_ratio) : null;
+  const scurrent =
+    a.current_ratio != null ? Math.min(1, a.current_ratio / 2) : null;
+
+  const avg = (vals) => {
+    const valid = vals.filter((v) => v != null);
+    return valid.length
+      ? valid.reduce((s, v) => s + v, 0) / valid.length
+      : null;
+  };
+
+  const valuation = avg([spe, spbv, speg]);
+  const profitability = avg([sroe, smargin, sopmargin]);
+  const growth = avg([srevgrowth, searngrowth]);
+  const health = avg([sdebt, scurrent]);
+
+  const components = [valuation, profitability, growth, health];
+  if (components.some((c) => c == null)) return null;
+
+  const score =
+    0.25 * valuation + 0.3 * profitability + 0.25 * growth + 0.2 * health;
+
+  let rating, ratingClass;
+  if (score >= 0.8) {
+    rating = "Strong Buy";
+    ratingClass = "rating-strong-buy";
+  } else if (score >= 0.6) {
+    rating = "Buy";
+    ratingClass = "rating-buy";
+  } else if (score >= 0.4) {
+    rating = "Hold";
+    ratingClass = "rating-hold";
+  } else {
+    rating = "Avoid";
+    ratingClass = "rating-avoid";
+  }
+
+  return {
+    score,
+    rating,
+    ratingClass,
+    valuation,
+    profitability,
+    growth,
+    health,
+  };
+}
+
 function MetricCard({ label, value, description }) {
   return (
     <div className="metric-card">
-      <div>
-        <p className="metric-label">{label}</p>
-        {description && <p className="metric-desc">{description}</p>}
-      </div>
+      <p className="metric-label">
+        {label}
+        {description && (
+          <span className="metric-info-wrap">
+            <span className="metric-info-icon" aria-hidden="true">
+              ℹ️
+            </span>
+            <span className="metric-tooltip">{description}</span>
+          </span>
+        )}
+      </p>
       <p className="metric-value">{value}</p>
     </div>
   );
@@ -207,11 +283,49 @@ function FinancialMetrics({ a }) {
     price != null && a.eps && a.earning_growth
       ? fmt2(price / a.eps / a.earning_growth)
       : "—";
-  console.log(a);
+
+  const result = calcScore(a, price);
 
   return (
     <section className="page-section" aria-label="Financial Metrics">
       <h2 className="page-section-heading">Financial Metrics</h2>
+
+      {result && (
+        <div className="score-card">
+          <div className="score-left">
+            <p className="score-label">Investment Score</p>
+            <p className="score-value">{(result.score * 100).toFixed(1)}</p>
+            <span className={`score-rating ${result.ratingClass}`}>
+              {result.rating}
+            </span>
+          </div>
+          <div className="score-breakdown">
+            {[
+              { label: "Valuation", val: result.valuation, weight: "25%" },
+              {
+                label: "Profitability",
+                val: result.profitability,
+                weight: "30%",
+              },
+              { label: "Growth", val: result.growth, weight: "25%" },
+              { label: "Health", val: result.health, weight: "20%" },
+            ].map(({ label, val, weight }) => (
+              <div key={label} className="score-bar-row">
+                <span className="score-bar-label">
+                  {label} <span className="score-weight">({weight})</span>
+                </span>
+                <div className="score-bar-track">
+                  <div
+                    className="score-bar-fill"
+                    style={{ width: `${(val * 100).toFixed(1)}%` }}
+                  />
+                </div>
+                <span className="score-bar-pct">{(val * 100).toFixed(0)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="metrics-sections">
         <MetricGroup title="Valuation">
           <MetricCard

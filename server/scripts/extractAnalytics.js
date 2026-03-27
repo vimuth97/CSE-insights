@@ -55,7 +55,18 @@ async function extractForSymbol(symbol) {
     contents: PROMPT(text),
   });
 
-  const raw = response.text.replace(/```json|```/g, "").trim();
+  // Retry once on rate limit
+  let raw;
+  try {
+    raw = response.text.replace(/```json|```/g, "").trim();
+  } catch {
+    await new Promise((r) => setTimeout(r, 60000));
+    const retry = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: PROMPT(text),
+    });
+    raw = retry.text.replace(/```json|```/g, "").trim();
+  }
   let metrics;
   try {
     metrics = JSON.parse(raw);
@@ -86,20 +97,38 @@ async function extractForSymbol(symbol) {
 async function run() {
   const [rows] = await db.execute("SELECT company FROM analytics");
   const symbols = rows.map((r) => r.company);
-  console.log(`Processing ${symbols.length} companies...`);
 
-  for (const symbol of symbols) {
+  // Only process companies that don't have data yet (eps is null)
+  const [doneRows] = await db.execute("SELECT company FROM analytics WHERE eps IS NOT NULL");
+  const done = new Set(doneRows.map((r) => r.company));
+  const pending = symbols.filter((s) => !done.has(s));
+
+  console.log(`[Analytics Extract] ${done.size} already done, ${pending.length} remaining...`);
+
+  for (const symbol of pending) {
     try {
       const metrics = await extractForSymbol(symbol);
-      console.log(`✓ ${symbol}`, metrics);
+      console.log(`[Analytics Extract] ✓ ${symbol}`, metrics);
     } catch (err) {
-      console.error(`✗ ${symbol}: ${err.message}`);
+      console.error(`[Analytics Extract] ✗ ${symbol}: ${err.message}`);
     }
-    await new Promise((r) => setTimeout(r, 2000));
+    // 5s delay between each to respect Gemini rate limits
+    await new Promise((r) => setTimeout(r, 5000));
+    // Extra 30s pause every 10 companies
+    if (pending.indexOf(symbol) % 10 === 9) {
+      console.log("[Analytics Extract] Pausing 30s to avoid rate limits...");
+      await new Promise((r) => setTimeout(r, 30000));
+    }
   }
 
-  console.log("Done.");
-  process.exit(0);
+  console.log("[Analytics Extract] Done.");
 }
 
-run();
+module.exports = { run };
+
+if (require.main === module) {
+  run().then(() => process.exit(0)).catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
