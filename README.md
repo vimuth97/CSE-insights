@@ -81,30 +81,16 @@ A full-stack web application for analysing companies listed on the **Colombo Sto
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/CSE-insights.git
+git clone https://github.com/vimuth97/CSE-insights.git
 cd CSE-insights
 ```
 
 ### 2. Set up the database
 
-Create a MySQL database and run the following:
+Install and run MySQL 8+, then run the following command to create the database
 
-```sql
-CREATE DATABASE cseinsights;
-
-CREATE TABLE `cseinsights`.`analytics` (
-  `company`          VARCHAR(10) NOT NULL,
-  `eps`              DOUBLE NULL,
-  `book_value`       DOUBLE NULL,
-  `roe`              DOUBLE NULL,
-  `net_profit`       DOUBLE NULL,
-  `operating_margin` DOUBLE NULL,
-  `revenue_growth`   DOUBLE NULL,
-  `earning_growth`   DOUBLE NULL,
-  `de_ratio`         DOUBLE NULL,
-  `current_ratio`    DOUBLE NULL,
-  PRIMARY KEY (`company`)
-);
+```bash
+mysql -u <username> -p < database/create_database.sql
 ```
 
 ### 3. Configure environment variables
@@ -121,13 +107,13 @@ DB_NAME=cseinsights
 CSE_API_URL=https://www.cse.lk/api/
 CSE_CDN_BASE=https://cdn.cse.lk/
 CSE_SYMBOL_LIST_URL=https://www.cse.lk/chat/company_symbol_list.csv
-GEMINI_API_KEY=your_gemini_api_key
+GEMINI_API_KEY=your_gemini_api_key (provided in the submitted word document)
 ```
 
 **`client/.env`**
 
 ```env
-REACT_APP_API_URL=http://localhost:5000
+REACT_APP_API_URL=backend_URL (default value: http://localhost:5000)
 REACT_APP_CDN_BASE=https://cdn.cse.lk/
 REACT_APP_LOGO_BASE=https://cdn.cse.lk/cmt/
 REACT_APP_CSE_OVERALL_PE=9.5
@@ -139,7 +125,7 @@ REACT_APP_CSE_OVERALL_PE=9.5
 # Backend
 cd server
 npm install
-npm run dev
+npm start
 
 # Frontend (new terminal)
 cd client
@@ -148,26 +134,6 @@ npm start
 ```
 
 The app will be available at `http://localhost:3000`.
-
----
-
-## Analytics Data Extraction
-
-To populate the analytics database with financial metrics extracted from annual reports:
-
-```bash
-cd server
-node scripts/extractAnalytics.js
-```
-
-This script:
-
-- Fetches the latest annual report PDF for each company from the CSE
-- Extracts text and sends it to Gemini to extract 9 financial metrics
-- Saves results to the database, skipping companies already processed
-- Runs automatically on the last day of every month via cron job
-
-> **Note:** Requires a Gemini API key. The free tier supports ~20 requests/day for Gemini 2.5 Flash and ~1500/day for Gemini 2.0 Flash.
 
 ---
 
