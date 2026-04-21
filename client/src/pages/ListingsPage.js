@@ -18,7 +18,7 @@ const fmtQty = (n) => (n != null ? Number(n).toLocaleString("en-LK") : "—");
 const fmtValue = (n) =>
   n != null ? `LKR ${(n / 1_000_000).toFixed(2)}M` : "—";
 const fmtPctChange = (n) =>
-  n != null ? `${n >= 0 ? "+" : ""}${Number(n).toFixed(4)}%` : "—";
+  n != null ? `${n >= 0 ? "+" : ""}${Number(n).toFixed(2)}%` : "—";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
@@ -152,7 +152,6 @@ export default function ListingsPage() {
   return (
     <>
       <Header />
-      {/* WCAG 2, 1.3.1: <main> landmark */}
       <main className="listings-page" aria-label="Listings">
         <div className="listings-content">
           <section aria-label="Company Directory">
@@ -164,7 +163,6 @@ export default function ListingsPage() {
             {!companiesLoading && !companiesError && (
               <>
                 <div className="table-controls">
-                  {/* WCAG 2, 1.3.1: label associated with select */}
                   <label className="entries-label" htmlFor="page-size">
                     Show
                     <select
@@ -187,7 +185,6 @@ export default function ListingsPage() {
                     entries
                   </span>
                 </div>
-                {/* WCAG 2, 1.3.1: scrollable region with label for screen readers */}
                 <div
                   className="table-wrapper"
                   role="region"
@@ -198,7 +195,6 @@ export default function ListingsPage() {
                     <thead>
                       <tr>
                         <SortTh label="Company" field="name" />
-                        {/* WCAG 2, 4.1.2: non-sortable column has no aria-sort */}
                         <th scope="col">Symbol</th>
                         <SortTh label="Price (LKR)" field="price" />
                         <SortTh label="Market Cap" field="marketCap" />
@@ -232,7 +228,6 @@ export default function ListingsPage() {
                     </tbody>
                   </table>
                 </div>
-                {/* WCAG 2, 4.1.2: pagination nav with aria-label */}
                 <nav
                   className="pagination"
                   aria-label="Company Directory pagination"
@@ -282,7 +277,6 @@ export default function ListingsPage() {
           >
             <h1 className="listings-heading">GICS Industry Group Indices</h1>
             <div className="table-controls">
-              {/* WCAG 2, 1.3.1: label associated with select */}
               <label className="entries-label" htmlFor="idx-page-size">
                 Show
                 <select
@@ -307,7 +301,6 @@ export default function ListingsPage() {
             </div>
             {indicesLoading && <p className="loading-msg">Loading indices…</p>}
             {indicesError && <p className="error-msg">{indicesError}</p>}
-            {/* WCAG 2, 1.3.1: scrollable region with label for screen readers */}
             {!indicesLoading && !indicesError && (
               <div
                 className="table-wrapper"
@@ -364,7 +357,6 @@ export default function ListingsPage() {
                 </table>
               </div>
             )}
-            {/* WCAG 2, 4.1.2: pagination nav with aria-label */}
             <nav className="pagination" aria-label="GICS Indices pagination">
               <button
                 className="page-btn"

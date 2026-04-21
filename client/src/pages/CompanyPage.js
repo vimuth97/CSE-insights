@@ -89,7 +89,6 @@ export default function CompanyPage() {
   return (
     <>
       <Header />
-      {/* WCAG 2, 1.3.1: <main> landmark */}
       <main className="company-page" aria-label={`${company.name} profile`}>
         <div className="company-content">
           <div className="company-header">

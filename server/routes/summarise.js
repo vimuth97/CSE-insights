@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
-      contents: `You are a financial analyst. Summarise the following financial report concisely, highlighting key figures, performance, and notable points in a way that is understandable to a non-expert to get idea if it is worth investing in:\n\n${text}`,
+      contents: `You are a financial analyst. Summarise the following financial report concisely, highlighting key figures, performance, and notable points in a way that is understandable to a non-expert to get idea if it is worth investing in:\n\n${text.slice(0, 400000)}`,
     });
 
     res.json({ summary: response.text });

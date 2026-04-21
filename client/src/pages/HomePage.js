@@ -24,11 +24,21 @@ export default function HomePage() {
   const [sl20Chart, setSl20Chart] = useState([]);
 
   useEffect(() => {
-    fetchMarketStatus().then(setMarketData).catch(() => {});
-    fetchMainIndices().then(setIndices).catch(() => {});
-    fetchMarketSummary().then(setSummary).catch(() => {});
-    fetchChartData(1).then((d) => setAspiChart(toChartPoints(d))).catch(() => {});
-    fetchChartData(40).then((d) => setSl20Chart(toChartPoints(d))).catch(() => {});
+    fetchMarketStatus()
+      .then(setMarketData)
+      .catch(() => {});
+    fetchMainIndices()
+      .then(setIndices)
+      .catch(() => {});
+    fetchMarketSummary()
+      .then(setSummary)
+      .catch(() => {});
+    fetchChartData(1)
+      .then((d) => setAspiChart(toChartPoints(d)))
+      .catch(() => {});
+    fetchChartData(40)
+      .then((d) => setSl20Chart(toChartPoints(d)))
+      .catch(() => {});
   }, []);
 
   const timestamp = new Date();
@@ -36,14 +46,12 @@ export default function HomePage() {
   const statusLabel = isOpen ? "Open" : "Closed";
 
   return (
-    // WCAG 2, 1.3.1: <main> landmark for screen reader navigation
     <>
       <Header />
       <main className="home-page" aria-label="CSE market dashboard">
         {/* ── Market Movers Carousel ── */}
         <MarketMovers />
         <div className="home-content">
-          {/* WCAG 2, 1.3.1: section with descriptive aria-label as region landmark */}
           <section className="status-section" aria-label="Market status">
             <h2 className="section-heading">Market Status</h2>
             <div className="status-card">
@@ -69,7 +77,6 @@ export default function HomePage() {
           </section>
 
           {/* ── Daily Stats ── */}
-          {/* WCAG 2, 1.3.1: section with descriptive aria-label as region landmark */}
           <section
             className="stats-section"
             aria-label="Daily market statistics"
@@ -129,7 +136,6 @@ export default function HomePage() {
           </section>
 
           {/* ── Indices ── */}
-          {/* WCAG 2, 1.3.1: section with descriptive aria-label as region landmark */}
           <section className="indices-section" aria-label="Market indices">
             <h2 className="section-heading">Market Indices</h2>
             <div className="indices-grid">
@@ -146,7 +152,6 @@ export default function HomePage() {
                         <p className="index-name">{index.symbol}</p>
                         <p className="index-full-name">{index.indexName}</p>
                       </div>
-                      {/* WCAG 2, 1.4.1: change uses arrow symbol + color, not color alone */}
                       <span
                         className={`index-change ${isPositive ? "change-up" : "change-down"}`}
                         aria-hidden="true"
@@ -173,7 +178,6 @@ export default function HomePage() {
           </section>
 
           {/* ── Index Charts ── */}
-          {/* WCAG 2, 1.3.1: section with descriptive aria-label as region landmark */}
           <section
             className="charts-section"
             aria-label="Index performance charts"
@@ -185,7 +189,6 @@ export default function HomePage() {
                   <p className="chart-card-name">ASPI</p>
                   <p className="chart-card-fullname">All Share Price Index</p>
                 </div>
-                {/* WCAG 2, 1.1.1: aria-label on chart wrapper provides text alternative */}
                 <IndexChart
                   data={aspiChart}
                   dataKey="value"
@@ -201,7 +204,6 @@ export default function HomePage() {
                     S&amp;P Sri Lanka 20 Index
                   </p>
                 </div>
-                {/* WCAG 2, 1.1.1: aria-label on chart wrapper provides text alternative */}
                 <IndexChart
                   data={sl20Chart}
                   dataKey="value"

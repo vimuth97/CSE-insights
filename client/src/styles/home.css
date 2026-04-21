@@ -1,12 +1,3 @@
-/*
-  Reuses CSE brand palette from auth.css:
-  --cse-blue:  #003087
-  --cse-gold:  #C9A84C
-  --cse-light: #F4F6FB
-
-  WCAG 2, 1.4.3 - all text/bg combos meet 4.5:1 minimum contrast ratio
-*/
-
 .home-page {
   min-height: 100vh;
   background-color: #f4f6fb;
@@ -19,7 +10,6 @@
   padding: 1.5rem 1rem;
 }
 
-/* WCAG 2, 1.4.1: badge uses text label + color, not color alone */
 .market-badge {
   margin-left: auto;
   display: flex;
@@ -33,14 +23,12 @@
 
 .badge-open {
   background: rgba(39, 174, 96, 0.15);
-  /* WCAG 2, 1.4.3: #1a7a42 on rgba bg — sufficient contrast */
   color: #1a7a42;
   border: 1.5px solid #27ae60;
 }
 
 .badge-closed {
   background: rgba(192, 57, 43, 0.12);
-  /* WCAG 2, 1.4.3: #922b21 on rgba bg — sufficient contrast */
   color: #922b21;
   border: 1.5px solid #c0392b;
 }
@@ -78,7 +66,6 @@
 .section-heading {
   font-size: 1rem;
   font-weight: 700;
-  /* WCAG 2, 1.4.3: #003087 on #f4f6fb = 11.2:1 contrast ratio */
   color: #003087;
   margin-bottom: 0.875rem;
 }
@@ -118,7 +105,6 @@
   border-radius: 10px;
   padding: 1.25rem 1rem;
   text-align: center;
-  /* WCAG 2, 1.4.1: border provides visual distinction beyond color alone */
   border: 1.5px solid #e0e7f0;
   box-shadow: 0 2px 8px rgba(0, 48, 135, 0.07);
 }
@@ -142,7 +128,6 @@
   display: block;
   font-size: 1.625rem;
   font-weight: 700;
-  /* WCAG 2, 1.4.3: #003087 on white = 10.7:1 */
   color: #003087;
   margin-bottom: 0.25rem;
 }
@@ -212,14 +197,11 @@
   border-radius: 6px;
 }
 
-/* WCAG 2, 1.4.1: up/down uses arrow symbol + color, not color alone */
-/* WCAG 2, 1.4.3: #1a7a42 on #eafaf1 = sufficient contrast */
 .change-up {
   color: #1a7a42;
   background: #eafaf1;
 }
 
-/* WCAG 2, 1.4.3: #922b21 on #fdf2f0 = sufficient contrast */
 .change-down {
   color: #922b21;
   background: #fdf2f0;
@@ -253,7 +235,6 @@
 .chart-card-name {
   font-size: 1rem;
   font-weight: 700;
-  /* WCAG 2, 1.4.3: #003087 on white = 10.7:1 */
   color: #003087;
   margin: 0 0 0.125rem;
 }
@@ -268,7 +249,6 @@
   width: 100%;
 }
 
-/* WCAG 2, 1.4.3: tooltip text #1a1a2e on white = sufficient contrast */
 .chart-tooltip {
   background: #ffffff;
   border: 1.5px solid #e0e7f0;
@@ -291,7 +271,6 @@
 }
 
 /* ── Responsive ── */
-/* WCAG 2, 1.4.4: reflow to single column at 480px */
 @media (max-width: 480px) {
   .stats-grid {
     grid-template-columns: 1fr;

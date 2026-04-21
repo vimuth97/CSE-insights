@@ -53,7 +53,6 @@ export default function SignUpPage() {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
-  // WCAG 2, 3.3.1: track visited fields so errors only show after user has left the field
   const [touched, setTouched] = useState({
     firstName: false,
     lastName: false,
@@ -79,7 +78,6 @@ export default function SignUpPage() {
     const { name, value } = e.target;
     const updated = { ...form, [name]: value };
     setForm(updated);
-    // WCAG 2, 3.3.1 - Error Identification: re-validate on change once field is touched or form submitted
     if (touched[name] || submitted) {
       setErrors((prev) => ({
         ...prev,
@@ -88,7 +86,6 @@ export default function SignUpPage() {
     }
   };
 
-  // WCAG 2, 3.3.1: validate individual field when user leaves it (onBlur)
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setTouched((prev) => ({ ...prev, [name]: true }));
@@ -121,10 +118,9 @@ export default function SignUpPage() {
   };
 
   return (
-    // WCAG 2, 1.3.1: <main> landmark lets screen readers jump directly to content
     <main className="auth-page" aria-label="Sign up page">
       <div className="auth-card">
-        {/* WCAG 2, 1.1.1: decorative icon excluded from accessibility tree via aria-hidden */}
+        {/* decorative icon excluded from accessibility tree via aria-hidden */}
         <div className="auth-brand" aria-hidden="true">
           <span className="brand-icon">📈</span>
         </div>
@@ -134,7 +130,6 @@ export default function SignUpPage() {
         {/* SEO: subtitle reinforces page topic for crawlers */}
         <p className="auth-subtitle">Create your account</p>
 
-        {/* WCAG 2, 4.1.2: aria-label gives the form an accessible name */}
         <form
           className="auth-form"
           onSubmit={handleSubmit}
@@ -144,7 +139,7 @@ export default function SignUpPage() {
           {/* 2-column grid on desktop, stacks to 1 column on mobile — see .form-row in auth.css */}
           <div className="form-row">
             <div className="form-group">
-              {/* WCAG 2, 1.3.1: <label> explicitly associated with input via htmlFor/id pairing */}
+              {/* <label> explicitly associated with input via htmlFor/id pairing */}
               <label htmlFor="firstName" className="form-label">
                 First name
               </label>
@@ -155,20 +150,16 @@ export default function SignUpPage() {
                 className={`form-input ${errors.firstName ? "input-error" : ""}`}
                 value={form.firstName}
                 onChange={handleChange}
-                // WCAG 2, 3.3.1: validate on blur so errors appear when user leaves the field
                 onBlur={handleBlur}
                 placeholder="Jane"
                 autoComplete="given-name"
-                // WCAG 2, 1.3.1: aria-describedby links input to its error message for screen readers
                 aria-describedby={
                   errors.firstName ? "firstName-error" : undefined
                 }
-                // WCAG 2, 4.1.2: aria-invalid signals invalid state to assistive tech
                 aria-invalid={!!errors.firstName}
-                // WCAG 2, 2.4.6: aria-required communicates mandatory field in label/instructions
                 aria-required="true"
               />
-              {/* WCAG 2, 3.3.1: role="alert" live region — screen readers announce errors immediately */}
+              {/* role="alert" live region — screen readers announce errors immediately */}
               {errors.firstName && (
                 <span id="firstName-error" className="error-msg" role="alert">
                   {errors.firstName}
@@ -177,7 +168,7 @@ export default function SignUpPage() {
             </div>
 
             <div className="form-group">
-              {/* WCAG 2, 1.3.1: <label> explicitly associated with input via htmlFor/id pairing */}
+              {/* <label> explicitly associated with input via htmlFor/id pairing */}
               <label htmlFor="lastName" className="form-label">
                 Last name
               </label>
@@ -188,20 +179,16 @@ export default function SignUpPage() {
                 className={`form-input ${errors.lastName ? "input-error" : ""}`}
                 value={form.lastName}
                 onChange={handleChange}
-                // WCAG 2, 3.3.1: validate on blur so errors appear when user leaves the field
                 onBlur={handleBlur}
                 placeholder="Doe"
                 autoComplete="family-name"
-                // WCAG 2, 1.3.1: aria-describedby links input to its error message for screen readers
                 aria-describedby={
                   errors.lastName ? "lastName-error" : undefined
                 }
-                // WCAG 2, 4.1.2: aria-invalid signals invalid state to assistive tech
                 aria-invalid={!!errors.lastName}
-                // WCAG 2, 2.4.6: aria-required communicates mandatory field in label/instructions
                 aria-required="true"
               />
-              {/* WCAG 2, 3.3.1: role="alert" live region — screen readers announce errors immediately */}
+              {/* role="alert" live region — screen readers announce errors immediately */}
               {errors.lastName && (
                 <span id="lastName-error" className="error-msg" role="alert">
                   {errors.lastName}
@@ -211,7 +198,6 @@ export default function SignUpPage() {
           </div>
 
           <div className="form-group">
-            {/* WCAG 2, 1.3.1: <label> explicitly associated with input via htmlFor/id pairing */}
             <label htmlFor="email" className="form-label">
               Email address
             </label>
@@ -222,18 +208,13 @@ export default function SignUpPage() {
               className={`form-input ${errors.email ? "input-error" : ""}`}
               value={form.email}
               onChange={handleChange}
-              // WCAG 2, 3.3.1: validate on blur so errors appear when user leaves the field
               onBlur={handleBlur}
               placeholder="sample@example.com"
               autoComplete="email"
-              // WCAG 2, 1.3.1: aria-describedby links input to its error message for screen readers
               aria-describedby={errors.email ? "email-error" : undefined}
-              // WCAG 2, 4.1.2: aria-invalid signals invalid state to assistive tech
               aria-invalid={!!errors.email}
-              // WCAG 2, 2.4.6: aria-required communicates mandatory field in label/instructions
               aria-required="true"
             />
-            {/* WCAG 2, 3.3.1: role="alert" live region — screen readers announce errors immediately */}
             {errors.email && (
               <span id="email-error" className="error-msg" role="alert">
                 {errors.email}
@@ -242,7 +223,6 @@ export default function SignUpPage() {
           </div>
 
           <div className="form-group">
-            {/* WCAG 2, 1.3.1: <label> explicitly associated with password input */}
             <label htmlFor="password" className="form-label">
               Password
             </label>
@@ -253,18 +233,13 @@ export default function SignUpPage() {
               className={`form-input ${errors.password ? "input-error" : ""}`}
               value={form.password}
               onChange={handleChange}
-              // WCAG 2, 3.3.1: validate on blur so errors appear when user leaves the field
               onBlur={handleBlur}
               placeholder="Minimum 8 characters"
               autoComplete="new-password"
-              // WCAG 2, 1.3.1: aria-describedby links input to its error message for screen readers
               aria-describedby={errors.password ? "password-error" : undefined}
-              // WCAG 2, 4.1.2: aria-invalid signals invalid state to assistive tech
               aria-invalid={!!errors.password}
-              // WCAG 2, 2.4.6: aria-required communicates mandatory field in label/instructions
               aria-required="true"
             />
-            {/* WCAG 2, 3.3.1: role="alert" live region for password errors */}
             {errors.password && (
               <span id="password-error" className="error-msg" role="alert">
                 {errors.password}
@@ -273,7 +248,6 @@ export default function SignUpPage() {
           </div>
 
           <div className="form-group">
-            {/* WCAG 2, 1.3.1: <label> explicitly associated with confirm password input */}
             <label htmlFor="confirmPassword" className="form-label">
               Confirm password
             </label>
@@ -284,20 +258,15 @@ export default function SignUpPage() {
               className={`form-input ${errors.confirmPassword ? "input-error" : ""}`}
               value={form.confirmPassword}
               onChange={handleChange}
-              // WCAG 2, 3.3.1: validate on blur so errors appear when user leaves the field
               onBlur={handleBlur}
               placeholder="Re-enter your password"
               autoComplete="new-password"
-              // WCAG 2, 1.3.1: aria-describedby links input to its error message for screen readers
               aria-describedby={
                 errors.confirmPassword ? "confirmPassword-error" : undefined
               }
-              // WCAG 2, 4.1.2: aria-invalid signals invalid state to assistive tech
               aria-invalid={!!errors.confirmPassword}
-              // WCAG 2, 2.4.6: aria-required communicates mandatory field in label/instructions
               aria-required="true"
             />
-            {/* WCAG 2, 3.3.1: role="alert" live region for confirm password errors */}
             {errors.confirmPassword && (
               <span
                 id="confirmPassword-error"
@@ -309,12 +278,12 @@ export default function SignUpPage() {
             )}
           </div>
 
-          {/* WCAG 2, 3.3.1: server-side error displayed as alert */}
           {apiError && (
-            <span className="error-msg" role="alert">{apiError}</span>
+            <span className="error-msg" role="alert">
+              {apiError}
+            </span>
           )}
 
-          {/* WCAG 2, 2.4.6: button label clearly describes the action */}
           <button type="submit" className="auth-btn" disabled={loading}>
             {loading ? "Creating Account…" : "Create Account"}
           </button>
@@ -322,7 +291,6 @@ export default function SignUpPage() {
 
         <p className="auth-footer">
           Already have an account?{" "}
-          {/* WCAG 2, 2.4.4: link text is descriptive and meaningful out of context */}
           <a href="/login" className="auth-link">
             Sign in
           </a>

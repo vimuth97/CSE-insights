@@ -2,7 +2,6 @@ import "../styles/footer.css";
 
 const YEAR = new Date().getFullYear();
 
-// WCAG 2, 1.3.1: <footer> landmark for screen reader navigation
 export default function Footer() {
   return (
     <footer className="site-footer" role="contentinfo">

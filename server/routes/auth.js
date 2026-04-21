@@ -4,12 +4,67 @@ const pool = require("../db");
 
 const router = express.Router();
 
+// Validation functions (matching frontend validations)
+const validateFirstName = (name) => {
+  if (!name) return "First name is required.";
+  if (name.trim().length < 2)
+    return "First name must be at least 2 characters.";
+  return "";
+};
+
+const validateLastName = (name) => {
+  if (!name) return "Last name is required.";
+  if (name.trim().length < 2) return "Last name must be at least 2 characters.";
+  return "";
+};
+
+const validateEmail = (email) => {
+  if (!email) return "Email is required.";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    return "Enter a valid email address.";
+  return "";
+};
+
+const validatePassword = (password) => {
+  if (!password) return "Password is required.";
+  if (password.length < 8) return "Password must be at least 8 characters.";
+  if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9])/.test(password))
+    return "Password must include uppercase, lowercase, number, and a special character.";
+  return "";
+};
+
 // POST /api/auth/register
 router.post("/register", async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, password, confirmPassword } = req.body;
 
-  if (!firstName || !lastName || !email || !password) {
-    return res.status(400).json({ error: "All fields are required." });
+  // Validate all fields
+  const firstNameError = validateFirstName(firstName);
+  const lastNameError = validateLastName(lastName);
+  const emailError = validateEmail(email);
+  const passwordError = validatePassword(password);
+  const confirmPasswordError = !confirmPassword
+    ? "Please confirm your password."
+    : confirmPassword !== password
+      ? "Passwords do not match."
+      : "";
+
+  if (
+    firstNameError ||
+    lastNameError ||
+    emailError ||
+    passwordError ||
+    confirmPasswordError
+  ) {
+    return res.status(400).json({
+      error: "Validation failed.",
+      details: {
+        firstName: firstNameError,
+        lastName: lastNameError,
+        email: emailError,
+        password: passwordError,
+        confirmPassword: confirmPasswordError,
+      },
+    });
   }
 
   const conn = await pool.getConnection();
@@ -52,8 +107,18 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ error: "All fields are required." });
+  // Validate fields
+  const emailError = validateEmail(email);
+  const passwordError = validatePassword(password);
+
+  if (emailError || passwordError) {
+    return res.status(400).json({
+      error: "Validation failed.",
+      details: {
+        email: emailError,
+        password: passwordError,
+      },
+    });
   }
 
   try {
