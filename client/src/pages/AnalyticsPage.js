@@ -96,7 +96,7 @@ function ReportList({ reports, loading, error }) {
   }, [reports]);
 
   if (loading) return <p className="loading-msg">Loading…</p>;
-  if (error) return <p className="error-msg">{error}</p>;
+  if (error) return <p className="error-msg-listings">{error}</p>;
   if (!reports.length)
     return <p className="report-empty">No reports available.</p>;
 
@@ -209,9 +209,9 @@ function calcScore(a, price) {
   const sdebt =
     a.de_ratio != null
       ? a.de_ratio < 0
-        ? 0  // negative equity = worst financial health
+        ? 0 // negative equity = worst financial health
         : a.de_ratio === 0
-          ? 1  // zero debt = perfect
+          ? 1 // zero debt = perfect
           : clamp(1 / a.de_ratio)
       : null;
 
@@ -231,24 +231,32 @@ function calcScore(a, price) {
   const growth = avg([srevgrowth, searngrowth]);
   const health = avg([sdebt, scurrent]);
 
-  const weights = { valuation: 0.25, profitability: 0.30, growth: 0.25, health: 0.20 };
+  const weights = {
+    valuation: 0.25,
+    profitability: 0.3,
+    growth: 0.25,
+    health: 0.2,
+  };
   const categories = { valuation, profitability, growth, health };
 
   const available = Object.entries(categories).filter(([, v]) => v != null);
   if (!available.length) return null;
 
   const totalWeight = available.reduce((s, [k]) => s + weights[k], 0);
-  const score = available.reduce((s, [k, v]) => s + (weights[k] / totalWeight) * v, 0);
+  const score = available.reduce(
+    (s, [k, v]) => s + (weights[k] / totalWeight) * v,
+    0,
+  );
 
   // --- Rating ---
   let rating, ratingClass;
-  if (score >= 0.80) {
+  if (score >= 0.8) {
     rating = "Strong Buy";
     ratingClass = "rating-strong-buy";
-  } else if (score >= 0.60) {
+  } else if (score >= 0.6) {
     rating = "Buy";
     ratingClass = "rating-buy";
-  } else if (score >= 0.40) {
+  } else if (score >= 0.4) {
     rating = "Hold";
     ratingClass = "rating-hold";
   } else {
@@ -321,17 +329,30 @@ function FinancialMetrics({ a }) {
           </div>
           <div className="score-breakdown">
             {[
-              { label: "Valuation",     val: result.valuation,     weight: "25%" },
-              { label: "Profitability", val: result.profitability, weight: "30%" },
-              { label: "Growth",        val: result.growth,        weight: "25%" },
-              { label: "Health",        val: result.health,        weight: "20%" },
+              { label: "Valuation", val: result.valuation, weight: "25%" },
+              {
+                label: "Profitability",
+                val: result.profitability,
+                weight: "30%",
+              },
+              { label: "Growth", val: result.growth, weight: "25%" },
+              { label: "Health", val: result.health, weight: "20%" },
             ].map(({ label, val, weight }) => (
               <div key={label} className="score-bar-row">
-                <span className="score-bar-label">{label} <span className="score-weight">({weight})</span></span>
+                <span className="score-bar-label">
+                  {label} <span className="score-weight">({weight})</span>
+                </span>
                 <div className="score-bar-track">
-                  <div className="score-bar-fill" style={{ width: val != null ? `${(val * 100).toFixed(1)}%` : "0%" }} />
+                  <div
+                    className="score-bar-fill"
+                    style={{
+                      width: val != null ? `${(val * 100).toFixed(1)}%` : "0%",
+                    }}
+                  />
                 </div>
-                <span className="score-bar-pct">{val != null ? (val * 100).toFixed(0) : "N/A"}</span>
+                <span className="score-bar-pct">
+                  {val != null ? (val * 100).toFixed(0) : "N/A"}
+                </span>
               </div>
             ))}
           </div>
@@ -500,6 +521,8 @@ export default function AnalyticsPage() {
                       className="company-logo"
                       src={`${LOGO_BASE}${company.logo}`}
                       alt={`${company.name} logo`}
+                      loading="eager"
+                      fetchPriority="high"
                       onError={(e) => {
                         e.target.style.display = "none";
                       }}

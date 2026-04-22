@@ -1,10 +1,22 @@
 const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-export async function registerUser({ firstName, lastName, email, password }) {
+export async function registerUser({
+  firstName,
+  lastName,
+  email,
+  password,
+  confirmPassword,
+}) {
   const res = await fetch(`${BASE_URL}/api/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ firstName, lastName, email, password }),
+    body: JSON.stringify({
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+    }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || "Registration failed.");

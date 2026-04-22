@@ -221,7 +221,43 @@
   color: #5a6a85;
 }
 
-.error-msg {
+.error-msg-listings {
   padding: 1rem;
   color: #922b21;
+}
+
+/* Skeleton loading styles */
+.skeleton-table {
+  opacity: 0.7;
+}
+
+.skeleton-box {
+  background: linear-gradient(
+    90deg,
+    #e0e7f0 25%,
+    #f0f3f7 50%,
+    #e0e7f0 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-header-box {
+  height: 1.2rem;
+  width: 100%;
+}
+
+.skeleton-cell-box {
+  height: 1.1rem;
+  width: 90%;
 }

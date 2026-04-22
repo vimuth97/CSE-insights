@@ -119,7 +119,7 @@ REACT_APP_LOGO_BASE=https://cdn.cse.lk/cmt/
 REACT_APP_CSE_OVERALL_PE=9.5
 ```
 
-### 4. Install dependencies and start
+### 4. Run in development mode
 
 ```bash
 # Backend
@@ -134,6 +134,19 @@ npm start
 ```
 
 The app will be available at `http://localhost:3000`.
+
+### 5. Build for production
+
+```bash
+cd client
+npm run build
+```
+
+This creates `client/build` directory, integrate it with the backend.
+
+### 6. Use the system
+
+Sign up and login as a new user.
 
 ---
 

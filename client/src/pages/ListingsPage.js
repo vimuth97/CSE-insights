@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import SkeletonTable from "../components/SkeletonTable";
 import "../styles/listings.css";
 import { fetchIndices, fetchCompanies } from "../api/market";
 
@@ -157,9 +158,35 @@ export default function ListingsPage() {
           <section aria-label="Company Directory">
             <h1 className="listings-heading">Company Directory</h1>
             {companiesLoading && (
-              <p className="loading-msg">Loading companies…</p>
+              <>
+                <div className="table-controls">
+                  <label className="entries-label" htmlFor="page-size">
+                    Show
+                    <select
+                      id="page-size"
+                      className="entries-select"
+                      value={pageSize}
+                      onChange={handlePageSize}
+                      disabled
+                    >
+                      {PAGE_SIZE_OPTIONS.map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+                    entries
+                  </label>
+                  <span className="entries-info" aria-live="polite">
+                    Loading…
+                  </span>
+                </div>
+                <SkeletonTable rowCount={pageSize} columnCount={6} />
+              </>
             )}
-            {companiesError && <p className="error-msg">{companiesError}</p>}
+            {companiesError && (
+              <p className="error-msg-listings">{companiesError}</p>
+            )}
             {!companiesLoading && !companiesError && (
               <>
                 <div className="table-controls">
@@ -276,124 +303,159 @@ export default function ListingsPage() {
             className="indices-section"
           >
             <h1 className="listings-heading">GICS Industry Group Indices</h1>
-            <div className="table-controls">
-              <label className="entries-label" htmlFor="idx-page-size">
-                Show
-                <select
-                  id="idx-page-size"
-                  className="entries-select"
-                  value={idxPageSize}
-                  onChange={handleIdxPageSize}
-                >
-                  {PAGE_SIZE_OPTIONS.map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-                entries
-              </label>
-              <span className="entries-info" aria-live="polite">
-                Showing {idxTotal === 0 ? 0 : idxStart + 1}–
-                {Math.min(idxStart + idxPageSize, idxTotal)} of {idxTotal}{" "}
-                entries
-              </span>
-            </div>
-            {indicesLoading && <p className="loading-msg">Loading indices…</p>}
-            {indicesError && <p className="error-msg">{indicesError}</p>}
-            {!indicesLoading && !indicesError && (
-              <div
-                className="table-wrapper"
-                role="region"
-                aria-label="GICS Industry Group Indices table"
-                tabIndex="0"
-              >
-                <table className="market-table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Index Name</th>
-                      <th scope="col">Index Code</th>
-                      <th scope="col">GICS Code</th>
-                      <th scope="col">Current Value</th>
-                      <IdxSortTh label="Change %" field="percentage" />
-                      <IdxSortTh
-                        label="Total Volume"
-                        field="sectorVolumeToday"
-                      />
-                      <IdxSortTh
-                        label="Total Value"
-                        field="sectorTurnoverToday"
-                      />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {idxRows.map((idx, i) => (
-                      <tr
-                        key={idx.id}
-                        className={i % 2 === 0 ? "row-odd" : "row-even"}
-                      >
-                        <td className="index-name">{idx.indexName}</td>
-                        <td className="company-symbol">{idx.indexCodeSp}</td>
-                        <td className="num">{idx.indexCode ?? "—"}</td>
-                        <td className="num">{fmtPrice(idx.indexValue)}</td>
-                        <td
-                          className={`num ${
-                            idx.percentage > 0
-                              ? "change-up"
-                              : idx.percentage < 0
-                                ? "change-down"
-                                : ""
-                          }`}
-                        >
-                          {fmtPctChange(idx.percentage)}
-                        </td>
-                        <td className="num">{fmtQty(idx.sectorVolumeToday)}</td>
-                        <td className="num">
-                          {fmtValue(idx.sectorTurnoverToday)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            {indicesLoading && (
+              <>
+                <div className="table-controls">
+                  <label className="entries-label" htmlFor="idx-page-size">
+                    Show
+                    <select
+                      id="idx-page-size"
+                      className="entries-select"
+                      value={idxPageSize}
+                      onChange={handleIdxPageSize}
+                      disabled
+                    >
+                      {PAGE_SIZE_OPTIONS.map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+                    entries
+                  </label>
+                  <span className="entries-info" aria-live="polite">
+                    Loading…
+                  </span>
+                </div>
+                <SkeletonTable rowCount={idxPageSize} columnCount={7} />
+              </>
             )}
-            <nav className="pagination" aria-label="GICS Indices pagination">
-              <button
-                className="page-btn"
-                onClick={() => setIdxPage(1)}
-                disabled={idxPage === 1}
-                aria-label="First page"
-              >
-                «
-              </button>
-              <button
-                className="page-btn"
-                onClick={() => setIdxPage((p) => p - 1)}
-                disabled={idxPage === 1}
-                aria-label="Previous page"
-              >
-                ‹
-              </button>
-              <span className="page-indicator" aria-current="true">
-                Page {idxPage} of {idxTotalPages}
-              </span>
-              <button
-                className="page-btn"
-                onClick={() => setIdxPage((p) => p + 1)}
-                disabled={idxPage === idxTotalPages}
-                aria-label="Next page"
-              >
-                ›
-              </button>
-              <button
-                className="page-btn"
-                onClick={() => setIdxPage(idxTotalPages)}
-                disabled={idxPage === idxTotalPages}
-                aria-label="Last page"
-              >
-                »
-              </button>
-            </nav>
+            {indicesError && (
+              <p className="error-msg-listings">{indicesError}</p>
+            )}
+            {!indicesLoading && !indicesError && (
+              <>
+                {console.log(indices)}
+                <div className="table-controls">
+                  <label className="entries-label" htmlFor="idx-page-size">
+                    Show
+                    <select
+                      id="idx-page-size"
+                      className="entries-select"
+                      value={idxPageSize}
+                      onChange={handleIdxPageSize}
+                    >
+                      {PAGE_SIZE_OPTIONS.map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+                    entries
+                  </label>
+                  <span className="entries-info" aria-live="polite">
+                    Showing {idxTotal === 0 ? 0 : idxStart + 1}–
+                    {Math.min(idxStart + idxPageSize, idxTotal)} of {idxTotal}{" "}
+                    entries
+                  </span>
+                </div>
+                <div
+                  className="table-wrapper"
+                  role="region"
+                  aria-label="GICS Industry Group Indices table"
+                  tabIndex="0"
+                >
+                  <table className="market-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Index Name</th>
+                        <th scope="col">Index Code</th>
+                        <th scope="col">GICS Code</th>
+                        <th scope="col">Current Value</th>
+                        <IdxSortTh label="Change %" field="percentage" />
+                        <IdxSortTh
+                          label="Total Volume"
+                          field="sectorVolumeToday"
+                        />
+                        <IdxSortTh
+                          label="Total Value"
+                          field="sectorTurnoverToday"
+                        />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {idxRows.map((idx, i) => (
+                        <tr
+                          key={idx.id}
+                          className={i % 2 === 0 ? "row-odd" : "row-even"}
+                        >
+                          <td className="index-name">{idx.indexName}</td>
+                          <td className="company-symbol">{idx.indexCodeSp}</td>
+                          <td className="num">{idx.indexCode ?? "—"}</td>
+                          <td className="num">{fmtPrice(idx.indexValue)}</td>
+                          <td
+                            className={`num ${
+                              idx.percentage > 0
+                                ? "change-up"
+                                : idx.percentage < 0
+                                  ? "change-down"
+                                  : ""
+                            }`}
+                          >
+                            {fmtPctChange(idx.percentage)}
+                          </td>
+                          <td className="num">
+                            {fmtQty(idx.sectorVolumeToday)}
+                          </td>
+                          <td className="num">
+                            {fmtValue(idx.sectorTurnoverToday)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+            {!indicesLoading && !indicesError && (
+              <nav className="pagination" aria-label="GICS Indices pagination">
+                <button
+                  className="page-btn"
+                  onClick={() => setIdxPage(1)}
+                  disabled={idxPage === 1}
+                  aria-label="First page"
+                >
+                  «
+                </button>
+                <button
+                  className="page-btn"
+                  onClick={() => setIdxPage((p) => p - 1)}
+                  disabled={idxPage === 1}
+                  aria-label="Previous page"
+                >
+                  ‹
+                </button>
+                <span className="page-indicator" aria-current="true">
+                  Page {idxPage} of {idxTotalPages}
+                </span>
+                <button
+                  className="page-btn"
+                  onClick={() => setIdxPage((p) => p + 1)}
+                  disabled={idxPage === idxTotalPages}
+                  aria-label="Next page"
+                >
+                  ›
+                </button>
+                <button
+                  className="page-btn"
+                  onClick={() => setIdxPage(idxTotalPages)}
+                  disabled={idxPage === idxTotalPages}
+                  aria-label="Last page"
+                >
+                  »
+                </button>
+              </nav>
+            )}
           </section>
         </div>
       </main>
